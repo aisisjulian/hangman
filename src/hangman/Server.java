@@ -217,11 +217,14 @@ public class Server {
             //move onto next player
         }
 
+        boolean checkForWin(){
 
+            return false;
+        }
 
-
-
-
+        boolean checkForLoss(){
+            return false;
+        }
 
     }
     // ***************************** End Game Class ********************** //
