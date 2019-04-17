@@ -25,12 +25,17 @@ public class Server {
     private HashMap<String, ClientThread> clientThreadMap = new HashMap<>();
     private ArrayList<Game> gamesList = new ArrayList<>();
 
+    private ArrayList<String> dictionary = new ArrayList<>();
+
     static int numClients = 0;
     static int numGames = 0;
 
     public Server(int port, Consumer<Serializable> callback){
         this.callback = callback;
         this.port = port;
+
+        //***************************************//
+        //  CREATE & INITIALIZE DICTIONARY HERE  //
     }
 
     public int getPort(){ return this.port; }
@@ -42,14 +47,29 @@ public class Server {
             }
         }
         catch(IOException e){
-            System.out.println("IOException in startConn()");
+            System.out.println("IOException -> startConn()");
         }
     }
 
+    public void send(Serializable data, int clientIndex){
+        try{
+            clientThreadList.get(clientIndex).out.writeObject(data);
+        }
+        catch(Exception e){
+            System.out.println("Exception -> send()");
+        }
 
+    }
 
-
-
+    public void closeConn() throws Exception{
+        for(int i = 0; i < clientThreadList.size(); i++){
+            if(clientThreadList.get(i).isConnected){
+                send("NO-CONNECTION", i);
+                clientThreadList.get(i).socket.close();
+            }
+        }
+        numClients = 0;
+    }
 
     // ******************************************************************* //
     //                                                                     //
@@ -58,20 +78,19 @@ public class Server {
     // ******************************************************************* //
 
     class ClientThread extends Thread{
-        int clientIndex;
+        private int clientIndex;
 
         // data members for game //
-        Game game;
-        boolean isInGame;
-        ArrayList<ClientThread> team;
-        ArrayList<Boolean> lettersGuessed;
+        private Game game;
+        private boolean isInGame;
+        private ArrayList<ClientThread> team;
         boolean hasPlayed;
         boolean isPlayingAgain;
 
         // data members for io //
         ObjectOutputStream out;
-        Socket socket;
-        boolean isConnected;
+        private Socket socket;
+        boolean isConnected = false;
 
         ClientThread(Socket s){
             this.socket = s;
@@ -82,8 +101,7 @@ public class Server {
             this.isPlayingAgain = false;
             this.hasPlayed = false;
             this.isInGame = false;
-            lettersGuessed = new ArrayList<>(); //index represents letter
-            for(int i = 0; i < 26; i++){ lettersGuessed.add(false); }
+
         }
 
         public void setClientIndex( int index ){ this.clientIndex = index; }
@@ -113,17 +131,90 @@ public class Server {
                this.out = out;
                socket.setTcpNoDelay(true);
 
-               while(isConnected){
-                  // Serializable data = (Serializable) in.readObject();
+               while(this.isConnected){
+                   Serializable data = (Serializable) in.readObject();
+                   System.out.println(data.toString());
                }
 
 
            }
-           catch(IOException e){
+           catch(Exception e){
+               callback.accept("NO-CONNECTION");
 
            }
 
 
+        }
+
+    }
+    // ********************  End Client Thread Class ********************* //
+    // ******************************************************************* //
+
+
+    // ******************************************************************* //
+    //                                                                     //
+    //                              Game Class                             //
+    //                                                                     //
+    // ******************************************************************* //
+    class Game{
+        private int numPlayers = 0;
+        private ArrayList<ClientThread> players;
+        private boolean isActive;
+        private int currentlyGuessing; //index of player of whose turn it is
+        private ArrayList<Boolean> lettersGuessed; //can change to array of characters?
+        private String word;
+        private int wordLength;
+        private ArrayList<Boolean> lettersGuessedInWord; //each index represents a character of the string
+        private int lives = 5; //subject to change
+
+        Game(ClientThread player){
+            isActive = false;
+            players = new ArrayList<>();
+            players.add(player);
+            numPlayers++;
+        }
+
+        void addPlayer(ClientThread player){
+            players.add(player);
+            numPlayers++;
+        }
+
+        void startGame(){
+            if(numPlayers == 4){ isActive = true; } //can change total num players in game HERE
+            if(isActive){
+                for(int i = 0; i < players.size(); i++){
+                    send("START", players.get(i).clientIndex);
+                }
+
+
+                //*****************************************//
+                lettersGuessed = new ArrayList<>(); //index represents letter
+                for(int i = 0; i < 26; i++){ lettersGuessed.add(false); }
+
+                //    INSERT CODE THAT PICKS RANDOM WORD   //
+
+                lettersGuessedInWord = new ArrayList<>(); //index represents letter
+                for(int i = 0; i < wordLength; i++){ lettersGuessedInWord.add(false); }
+                //*****************************************//
+
+                currentlyGuessing = 0;
+                send("WAITING-FOR-GUESS", players.get(currentlyGuessing).clientIndex);
+            }
+        }
+
+        void resetGame(){
+            players.clear();
+            numPlayers = 0;
+        }
+
+        void evaluateGuess(){
+            //update lettersGuessed
+
+            //if wrong guess, update lives, check for loss
+
+            //if right guess, update lettersGuessInWord, check for win
+
+            //move onto next player
         }
 
 
@@ -132,10 +223,11 @@ public class Server {
 
 
 
-
     }
-    // ********************  End Client Thread Class ********************* //
+    // ***************************** End Game Class ********************** //
     // ******************************************************************* //
+
+
 
 }
 // ************************** End Server Class *********************** //
@@ -143,16 +235,3 @@ public class Server {
 
 
 
-// ******************************************************************* //
-//                                                                     //
-//                              Game Class                             //
-//                                                                     //
-// ******************************************************************* //
-class Game{
-
-
-
-
-}
-// ***************************** End Game Class ********************** //
-// ******************************************************************* //
