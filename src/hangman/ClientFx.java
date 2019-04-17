@@ -40,6 +40,9 @@ public class ClientFx extends Application {
         launch(args);
     }
 
+    // ******************************************************************* //
+    //                          GUI Nested Classes                         //
+    // ******************************************************************* //
     class StartScene{
         Scene scene;
         BorderPane startPane;
@@ -77,6 +80,9 @@ public class ClientFx extends Application {
     class EndScene{
 
     }
+
+    // ********************  End Nested GUI Classes ********************** //
+    // ******************************************************************* //
 }
 
 
