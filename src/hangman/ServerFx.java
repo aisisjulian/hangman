@@ -17,7 +17,7 @@ public class ServerFx extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        primaryStage.setTitle("Hello World");
+        primaryStage.setTitle("Spaceman Server");
         primaryStage.show();
     }
 

@@ -33,7 +33,7 @@ public class ClientFx extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        primaryStage.setTitle("Hello World");
+        primaryStage.setTitle("Welcome to Spaceman :-)");
         StartScene ss = new StartScene();
         primaryStage.setScene(ss.scene);
         primaryStage.show();
@@ -55,7 +55,7 @@ public class ClientFx extends Application {
         Button singlePlayerButton, multiPlayerButton, twoPlayerButton, threePlayerButton, fourPlayerButton;
         VBox connectionBox;
         VBox optionsBox;
-        Button connect, start;
+        Button connectButton, startButton;
         TextArea ipInput, portInput;
         Label header, ipLabel, portLabel, numPlayersLabel;
 
@@ -66,11 +66,6 @@ public class ClientFx extends Application {
             Image buttonBackgroundImage  = new Image("buttonBackground.png");
             Background buttonBackground = new Background(new BackgroundFill(new ImagePattern(buttonBackgroundImage), CornerRadii.EMPTY, Insets.EMPTY));
             startPane.setBackground(startBackground);
-            singlePlayerButton = new Button(" Single-Player");
-            multiPlayerButton = new Button("Multi-Player");
-            twoPlayerButton = new Button("2-Player");
-            threePlayerButton = new Button( "3-Player");
-            fourPlayerButton = new Button("4-Player");
 
             header = new Label("");
             header.setTextFill(Color.WHITE);
@@ -95,13 +90,58 @@ public class ClientFx extends Application {
             ipBox.setAlignment(Pos.CENTER);
             portBox.setAlignment(Pos.CENTER);
 
-            connect = new Button("CONNECT");
-            connect.setPrefSize(250, 80);
-            connect.setBackground(buttonBackground);
-            connect.setTextFill(Color.NAVY);
-            connect.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 22));
-            connect.setTextAlignment(TextAlignment.CENTER);
-            optionsBox = new VBox(10, header, ipBox, portBox, connect);
+            connectButton = new Button("START");
+            connectButton.setPrefSize(250, 80);
+            connectButton.setBackground(buttonBackground);
+            connectButton.setTextFill(Color.NAVY);
+            connectButton.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 22));
+            connectButton.setTextAlignment(TextAlignment.CENTER);
+            connectionBox = new VBox(10, header, ipBox, portBox, connectButton);
+            connectionBox.setAlignment(Pos.CENTER);
+
+            singlePlayerButton = new Button(" Single-Player");
+            singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            singlePlayerButton.setPrefSize(150, 40);
+            singlePlayerButton.setTextFill(Color.INDIGO);
+            singlePlayerButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
+
+            multiPlayerButton = new Button("Multi-Player");
+            multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            multiPlayerButton.setPrefSize(150, 40);
+            multiPlayerButton.setTextFill(Color.INDIGO);
+            multiPlayerButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
+
+            HBox playerMode = new HBox(10, singlePlayerButton, multiPlayerButton);
+            playerMode.setAlignment(Pos.CENTER);
+
+            twoPlayerButton = new Button("2-Players");
+            twoPlayerButton.setBackground(new Background(new BackgroundFill(Color.LAVENDERBLUSH, new CornerRadii(20), Insets.EMPTY)));
+            twoPlayerButton.setPrefSize(75, 25);
+            twoPlayerButton.setTextFill(Color.INDIGO);
+            twoPlayerButton.setFont(Font.font("verdana", FontWeight.BOLD, 11));
+
+            threePlayerButton = new Button( "3-Players");
+            threePlayerButton.setBackground(new Background(new BackgroundFill(Color.LAVENDERBLUSH, new CornerRadii(20), Insets.EMPTY)));
+            threePlayerButton.setPrefSize(75, 25);
+            threePlayerButton.setTextFill(Color.INDIGO);
+            threePlayerButton.setFont(Font.font("verdana", FontWeight.BOLD, 11));
+
+            fourPlayerButton = new Button("4-Players");
+            fourPlayerButton.setBackground(new Background(new BackgroundFill(Color.LAVENDERBLUSH, new CornerRadii(20), Insets.EMPTY)));
+            fourPlayerButton.setPrefSize(75, 25);
+            fourPlayerButton.setTextFill(Color.INDIGO);
+            fourPlayerButton.setFont(Font.font("verdana", FontWeight.BOLD, 11));
+
+            startButton = new Button("START");
+            startButton.setPrefSize(150, 80);
+            startButton.setBackground(buttonBackground);
+            startButton.setTextFill(Color.MIDNIGHTBLUE);
+            startButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 19));
+            startButton.setTextAlignment(TextAlignment.CENTER);
+
+            HBox numPlayersBox = new HBox(8, twoPlayerButton, threePlayerButton, fourPlayerButton);
+            numPlayersBox.setAlignment(Pos.CENTER);
+            optionsBox = new VBox(15, header, playerMode, numPlayersBox, startButton);
             optionsBox.setAlignment(Pos.CENTER);
             startPane.setCenter(optionsBox);
 
