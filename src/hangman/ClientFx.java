@@ -61,7 +61,7 @@ public class ClientFx extends Application {
 
         public StartScene(){
             startPane = new BorderPane();
-            startBackgroundImage  = new Image("startSceneOpt.png");
+            startBackgroundImage  = new Image("startScene.png");
             startBackground = new Background(new BackgroundFill(new ImagePattern(startBackgroundImage), CornerRadii.EMPTY, Insets.EMPTY));
             Image buttonBackgroundImage  = new Image("buttonBackground.png");
             Background buttonBackground = new Background(new BackgroundFill(new ImagePattern(buttonBackgroundImage), CornerRadii.EMPTY, Insets.EMPTY));
