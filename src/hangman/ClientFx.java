@@ -1,6 +1,7 @@
 package hangman;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -29,19 +30,86 @@ public class ClientFx extends Application {
     boolean started = false;
 
 
-    //private Scene startScene, gameScene, endScene;
+    private Scene startScene, gameScene, endScene;
+    private StartScene ss = new StartScene();
+    private GameScene gs = new GameScene();
+    private EndScene es = new EndScene();
 
     @Override
     public void start(Stage primaryStage) throws Exception{
         primaryStage.setTitle("Welcome to Spaceman :-)");
-        StartScene ss = new StartScene();
-        primaryStage.setScene(ss.scene);
+        startScene = ss.scene;
+        primaryStage.setScene(this.startScene);
+
+        ss.connectButton.setOnAction(event->{
+            if(!ss.ipInput.getText().isEmpty() && !ss.portInput.getText().isEmpty()){
+                try {
+                    if(!started) {
+                        started = true;
+                        client = createClient(ss.ipInput.getText(), Integer.parseInt(ss.portInput.getText()), primaryStage);
+                        task = () -> client.clientConnect();
+                        t = new Thread(task);
+                        t.setDaemon(true);
+                        t.start();
+                    }
+                }
+                catch(Exception e){
+                    ss.connectButton.setDisable(false);
+                    ss.ipInput.clear();
+                    ss.portInput.clear();
+                    System.out.println("exception with connect button");
+                }
+            }
+        });
+
+
+
+
         primaryStage.show();
     }
 
-
     public static void main(String[] args) {
         launch(args);
+    }
+
+    private Client createClient(String IP, int portIn, Stage primaryStage) {
+        return new Client(IP, portIn, data -> {
+            Platform.runLater(() -> {
+                switch (data.toString()) {
+                    case "CONNECTION":
+                        ss.header.setText("CONNECTED TO SERVER");
+                        ss.header.setPrefSize(300, 40);
+                        ss.header.setAlignment(Pos.CENTER);
+                        isConnected = true;
+                        ss.ipInput.clear();
+                        ss.ipInput.setVisible(false);
+                        ss.ipLabel.setVisible(false);
+                        ss.portLabel.setVisible(false);
+                        ss.portInput.clear();
+                        ss.portInput.setVisible(false);
+                        ss.connectButton.setDisable(true);
+                        break;
+                    case "NO-CONNECTION":
+                        isConnected = false;
+                        ss.ipInput.clear();
+                        ss.ipInput.setVisible(true);
+                        ss.ipLabel.setVisible(true);
+                        ss.portLabel.setVisible(true);
+                        ss.portInput.clear();
+                        ss.portInput.setVisible(true);
+                        ss.connectButton.setDisable(false);
+                        ss.connectButton.setText("connect");
+                        ss.header.setText("NO CONNECTION");
+                        ss.header.setPrefSize(300, 40);
+                        ss.header.setAlignment(Pos.CENTER);
+                        started = false;
+                        primaryStage.setScene(this.startScene);
+                        break;
+                }
+            });
+        });
+
+
     }
 
     // ******************************************************************* //
@@ -90,7 +158,7 @@ public class ClientFx extends Application {
             ipBox.setAlignment(Pos.CENTER);
             portBox.setAlignment(Pos.CENTER);
 
-            connectButton = new Button("START");
+            connectButton = new Button("CONNECT");
             connectButton.setPrefSize(250, 80);
             connectButton.setBackground(buttonBackground);
             connectButton.setTextFill(Color.NAVY);
@@ -143,8 +211,7 @@ public class ClientFx extends Application {
             numPlayersBox.setAlignment(Pos.CENTER);
             optionsBox = new VBox(15, header, playerMode, numPlayersBox, startButton);
             optionsBox.setAlignment(Pos.CENTER);
-            startPane.setCenter(optionsBox);
-
+            startPane.setCenter(connectionBox);
             scene = new Scene(startPane, 500, 500);
         }
     }

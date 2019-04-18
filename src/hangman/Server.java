@@ -130,7 +130,7 @@ public class Server {
 
                this.out = out;
                socket.setTcpNoDelay(true);
-
+                send("CONNECTION", this.clientIndex);
                while(this.isConnected){
                    Serializable data = (Serializable) in.readObject();
                    System.out.println(data.toString());
