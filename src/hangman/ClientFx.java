@@ -116,16 +116,16 @@ public class ClientFx extends Application {
     //                          GUI Nested Classes                         //
     // ******************************************************************* //
     class StartScene{
-        Scene scene;
-        BorderPane startPane;
-        Image startBackgroundImage;
-        Background startBackground;
-        Button singlePlayerButton, multiPlayerButton, twoPlayerButton, threePlayerButton, fourPlayerButton;
-        VBox connectionBox;
-        VBox optionsBox;
-        Button connectButton, startButton;
-        TextArea ipInput, portInput;
-        Label header, ipLabel, portLabel, numPlayersLabel;
+        private Scene scene;
+        private BorderPane startPane;
+        private Image startBackgroundImage;
+        private Background startBackground;
+        private Button singlePlayerButton, multiPlayerButton, twoPlayerButton, threePlayerButton, fourPlayerButton;
+        private VBox connectionBox;
+        private VBox optionsBox;
+        private Button connectButton, startButton;
+        private TextArea ipInput, portInput;
+        private Label header, ipLabel, portLabel, numPlayersLabel;
 
         public StartScene(){
             startPane = new BorderPane();
