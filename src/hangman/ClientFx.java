@@ -211,7 +211,7 @@ public class ClientFx extends Application {
             numPlayersBox.setAlignment(Pos.CENTER);
             optionsBox = new VBox(15, header, playerMode, numPlayersBox, startButton);
             optionsBox.setAlignment(Pos.CENTER);
-            startPane.setCenter(connectionBox);
+            startPane.setCenter(optionsBox);
             scene = new Scene(startPane, 500, 500);
         }
     }

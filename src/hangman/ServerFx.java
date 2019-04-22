@@ -1,6 +1,7 @@
 package hangman;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -8,37 +9,108 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 
 public class ServerFx extends Application {
 
     private Server server;
-    private ServerSocket ss;
+    private ServerSocket serverSocket;
 
-    private serverDisplay serverScene;
+    private serverDisplay ss;
+    private boolean isServerOn = false;
 
 
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage){
         primaryStage.setTitle("Space-Man Server");
-        serverScene = new serverDisplay();
-        primaryStage.setScene(serverScene.scene);
+        ss = new serverDisplay();
+
+
+        this.ss.portInput.setOnAction(ActionEvent -> {
+            try {
+                server = createServer(Integer.valueOf(ss.portInput.getText()));
+                ss.portInput.clear();
+                ss.portInput.setVisible(false);
+                ss.portInputLabel.setVisible(false);
+                ss.serverOn.setDisable(false);
+                isServerOn = true;
+            }
+            catch(Exception e){
+                System.out.println("exception in start()");
+            }
+        });
+
+        ss.serverOn.setOnAction(event -> {
+            ss.serverOn.setDisable(true);
+            try {
+                if(isServerOn) {
+                    this.serverSocket = new ServerSocket(server.getPort());
+                    startServer();
+                    Server.numClients = 0;
+                    ss.serverOff.setDisable(false);
+                    ss.message.setText("~ server on ~");
+                }
+            }
+            catch (IOException e) {
+                ss.portInput.setVisible(true);
+                ss.portInputLabel.setVisible(true);
+                ss.serverOff.setDisable(true);
+            }
+        });
+
+        ss.serverOff.setOnAction(event -> {
+            try {
+                isServerOn = false;
+                server.closeConn();
+                this.serverSocket.close();
+                ss.portInput.setVisible(true);
+                ss.portInputLabel.setVisible(true);
+                ss.message.setText("~ server off ~");
+                ss.serverOff.setDisable(true);
+            }
+            catch (Exception e){
+                //status.setText("FAILED TO TURN SERVER OFF");
+            }
+            ss.serverOff.setDisable(true);
+            ss.serverOn.setDisable(true);
+        });
+
+        primaryStage.setScene(ss.scene);
         primaryStage.show();
-
-
     }
 
 
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public void startServer() {
+        Runnable task = () -> server.startConn(this.serverSocket);
+        Thread t = new Thread(task);
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private Server createServer(int port){
+        return new Server(port, data->{
+            Platform.runLater(()->{
+                ss.numconnectedLabel.setText(" " + Server.numClients);
+                System.out.println(Server.numClients);
+                if(data.toString().equals("NO-CONNECTION")){
+                    System.out.println("NO CONNECTION");
+                }
+            });
+        });
     }
 
     // ******************************************************************* //
@@ -51,7 +123,7 @@ public class ServerFx extends Application {
         private HBox portBox;
         private Label header, message;
         private Label portInputLabel, numconnectedLabel;
-        private TextArea portInput;
+        private TextField portInput;
         private Button serverOn, serverOff;
 
         serverDisplay(){
@@ -60,7 +132,7 @@ public class ServerFx extends Application {
             this.serverPane.setPrefSize(500, 400);
 
             header = new Label("WELCOME TO SPACEMAN");
-            header.setTextFill(Color.WHITE);
+            header.setTextFill(Color.GOLD);
             header.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 32));
             header.setAlignment(Pos.CENTER);
 
@@ -76,7 +148,7 @@ public class ServerFx extends Application {
             portInputLabel.setTextFill(Color.WHITE);
             portInputLabel.setFont(Font.font("sans-serif", FontWeight.BOLD, 18));
 
-            portInput = new TextArea();
+            portInput = new TextField();
             portInput.setBackground(new Background(new BackgroundFill(Color.LEMONCHIFFON, CornerRadii.EMPTY, Insets.EMPTY)));
             portInput.setPrefSize(100, 15);
 
