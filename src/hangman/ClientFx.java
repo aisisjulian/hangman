@@ -221,23 +221,34 @@ public class ClientFx extends Application {
     class GameScene{
        // private Button A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z;
         private ArrayList<Button> keyboard = new ArrayList<>();
+        private HBox row1 = new HBox(10);
+        private HBox row2 = new HBox(10);
+        private HBox row3 = new HBox(10);
 
         public GameScene(){
             for (int i = 0; i < 26; i++){
                 char letter = (char)(65 + i);
-                Button k = new Button(letter + " ");
+                Button k = new Button(letter + "");
                 keyboard.add(k);
                 k.setOnAction(sendLetter);
-              //  keyboard.getIndexOf();
+                if (i < 9){
+                    row1.getChildren().add(k);
+                }
+                else if(i < 18){
+                    row2.getChildren().add(k);
+                }
+                else {
+                    row3.getChildren().add(k);
+                }
             }
         }
 
         EventHandler<ActionEvent> sendLetter = event -> {
             Button b = (Button) event.getSource();
             String s = b.getText();
-            String[] letter = s.split(" ");
             b.setDisable(true);
-            // send letter[0];
+            //  keyboard.getIndexOf();
+            // send s;
         };
     }
 
