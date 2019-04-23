@@ -25,46 +25,74 @@ public class Server {
     private ArrayList<Game> gamesList = new ArrayList<>();
 
     private ArrayList<String> dictionary = new ArrayList<>();
+    private ArrayList<String> easyDictionary = new ArrayList<>();
+    private ArrayList<String> mediumDictionary = new ArrayList<>();
+    private ArrayList<String> hardDictionary = new ArrayList<>();
 
     static int numClients = 0;
     static int numGames = 0;
 
-    public Server(int port, Consumer<Serializable> callback){
+    public Server(int port){
         this.callback = callback;
         this.port = port;
 
         //***************************************//
         //  CREATE & INITIALIZE DICTIONARY HERE  //
+        initDictionary();
 
-        String token = "";
+
+
+    }
+
+    public void initDictionary(){
+        String word = "";
         try {
-            //need to add you own path
             Scanner inFile = new Scanner(new File ("src/dictionary-small.txt"));
-            List<String> temps = new ArrayList<String>();
+            List<String> temp = new ArrayList<String>();
 
             while (inFile.hasNext()){
-                token = inFile.next();
-                dictionary.add(token);
+                word = inFile.next();
+                word = word.toUpperCase();
+                dictionary.add(word);
+
+                if(word.length() <= 4 && word.length() > 2){
+                    easyDictionary.add(word);
+                }
+                else if(word.length() > 4 && word.length() <= 7){
+                    mediumDictionary.add(word);
+                }
+                else if(word.length() > 7){
+                    hardDictionary.add(word);
+                }
             }
             inFile.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
+
+
+
+
+
         //prints the library
         for (int i = 0; i < dictionary.size(); i++){
             System.out.println(dictionary.get(i));
         }
 
-
     }
+
 
     public int getPort(){ return this.port; }
 
     public void startConn(ServerSocket ss){
         try{
+            System.out.println("Waiting for clients on server socket: " + ss);
             while(true){
                 ClientThread t = new ClientThread(ss.accept());
+                clientThreadList.add(t);
+                t.clientIndex = clientThreadList.size()-1;
+                t.start();
             }
         }
         catch(IOException e){
@@ -80,6 +108,17 @@ public class Server {
             System.out.println("Exception -> send()");
         }
 
+    }
+
+    public void broadcast(Serializable data){
+        try{
+            for (int i = 0; i <clientThreadList.size(); i++){
+                clientThreadList.get(i).out.writeObject(data);
+            }
+        }
+        catch(Exception e){
+            System.out.println("Exception -> broadcast()");
+        }
     }
 
     public void closeConn() throws Exception{
@@ -151,7 +190,7 @@ public class Server {
 
                this.out = out;
                socket.setTcpNoDelay(true);
-                send("CONNECTION", this.clientIndex);
+               send("CONNECTION", this.clientIndex);
                while(this.isConnected){
                    Serializable data = (Serializable) in.readObject();
                    System.out.println(data.toString());

@@ -31,11 +31,13 @@ public class ClientFx extends Application {
     private Thread t;
     boolean started = false;
 
-
     private Scene startScene, gameScene, endScene;
     private StartScene ss = new StartScene();
     private GameScene gs = new GameScene();
     private EndScene es = new EndScene();
+    private BorderPane startPane;
+    private VBox connectionBox;
+    private VBox optionsBox;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -65,8 +67,6 @@ public class ClientFx extends Application {
         });
 
 
-
-
         primaryStage.show();
     }
 
@@ -90,6 +90,7 @@ public class ClientFx extends Application {
                         ss.portInput.clear();
                         ss.portInput.setVisible(false);
                         ss.connectButton.setDisable(true);
+                        startPane.setCenter(optionsBox);
                         break;
                     case "NO-CONNECTION":
                         isConnected = false;
@@ -119,12 +120,9 @@ public class ClientFx extends Application {
     // ******************************************************************* //
     class StartScene{
         private Scene scene;
-        private BorderPane startPane;
         private Image startBackgroundImage;
         private Background startBackground;
         private Button singlePlayerButton, multiPlayerButton, twoPlayerButton, threePlayerButton, fourPlayerButton;
-        private VBox connectionBox;
-        private VBox optionsBox;
         private Button connectButton, startButton;
         private TextArea ipInput, portInput;
         private Label header, ipLabel, portLabel, numPlayersLabel;
@@ -213,7 +211,7 @@ public class ClientFx extends Application {
             numPlayersBox.setAlignment(Pos.CENTER);
             optionsBox = new VBox(15, header, playerMode, numPlayersBox, startButton);
             optionsBox.setAlignment(Pos.CENTER);
-            startPane.setCenter(optionsBox);
+            startPane.setCenter(connectionBox);
             scene = new Scene(startPane, 500, 500);
         }
     }
