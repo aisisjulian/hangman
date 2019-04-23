@@ -35,7 +35,7 @@ public class ClientFx extends Application {
     private StartScene ss = new StartScene();
     private GameScene gs = new GameScene();
     private EndScene es = new EndScene();
-    private BorderPane startPane;
+    private BorderPane startPane, gamePane, endPane;
     private VBox connectionBox;
     private VBox optionsBox;
 
@@ -223,7 +223,7 @@ public class ClientFx extends Application {
         public GameScene(){
             for (int i = 0; i < 26; i++){
                 char letter = (char)(65 + i);
-                Button k = new Button(letter + " ");
+                Button k = new Button(letter + "");
                 keyboard.add(k);
                 k.setOnAction(sendLetter);
               //  keyboard.getIndexOf();
@@ -240,6 +240,24 @@ public class ClientFx extends Application {
     }
 
     class EndScene{
+        private Scene scene;
+        private Image endBackgroundImage;
+        private Background endBackground;
+
+        public EndScene(){
+            endPane = new BorderPane();
+            endBackgroundImage = new Image("endScene.png");
+            endBackground = new Background(new BackgroundFill(new ImagePattern(endBackgroundImage), CornerRadii.EMPTY, Insets.EMPTY));
+            endPane.setBackground(endBackground);
+
+            // display letters guessed
+            // display the final word
+            // display win or lose
+            // ask to quit or new game
+
+            scene = new Scene(endPane, 500, 500);
+        }
+
 
     }
 
