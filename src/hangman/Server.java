@@ -25,6 +25,9 @@ public class Server {
     private ArrayList<Game> gamesList = new ArrayList<>();
 
     private ArrayList<String> dictionary = new ArrayList<>();
+    private ArrayList<String> easyDictionary = new ArrayList<>();
+    private ArrayList<String> mediumDictionary = new ArrayList<>();
+    private ArrayList<String> hardDictionary = new ArrayList<>();
 
     static int numClients = 0;
     static int numGames = 0;
@@ -35,29 +38,50 @@ public class Server {
 
         //***************************************//
         //  CREATE & INITIALIZE DICTIONARY HERE  //
+        initDictionary();
 
-        String token = "";
+
+
+    }
+
+    public void initDictionary(){
+        String word = "";
         try {
-            //need to add you own path
             Scanner inFile = new Scanner(new File ("src/dictionary-small.txt"));
-            List<String> temps = new ArrayList<String>();
+            List<String> temp = new ArrayList<String>();
 
             while (inFile.hasNext()){
-                token = inFile.next();
-                dictionary.add(token);
+                word = inFile.next();
+                word = word.toUpperCase();
+                dictionary.add(word);
+
+                if(word.length() <= 4 && word.length() > 2){
+                    easyDictionary.add(word);
+                }
+                else if(word.length() > 4 && word.length() <= 7){
+                    mediumDictionary.add(word);
+                }
+                else if(word.length() > 7){
+                    hardDictionary.add(word);
+                }
             }
             inFile.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
+
+
+
+
+
         //prints the library
         for (int i = 0; i < dictionary.size(); i++){
             System.out.println(dictionary.get(i));
         }
 
-
     }
+
 
     public int getPort(){ return this.port; }
 
