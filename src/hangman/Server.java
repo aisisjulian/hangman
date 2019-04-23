@@ -36,10 +36,10 @@ public class Server {
         //***************************************//
         //  CREATE & INITIALIZE DICTIONARY HERE  //
 
-        /*String token = "";
+        String token = "";
         try {
             //need to add you own path
-            Scanner inFile = new Scanner(new File ("C:/Users/wsiew/IdeaProjects/hangman/src/dictionary-small.txt"));
+            Scanner inFile = new Scanner(new File ("src/dictionary-small.txt"));
             List<String> temps = new ArrayList<String>();
 
             while (inFile.hasNext()){
@@ -55,7 +55,7 @@ public class Server {
         for (int i = 0; i < dictionary.size(); i++){
             System.out.println(dictionary.get(i));
         }
-        */
+
 
     }
 
