@@ -58,6 +58,7 @@ public class ServerFx extends Application {
                     Server.numClients = 0;
                     ss.serverOff.setDisable(false);
                     ss.message.setText("~ server on ~");
+
                 }
             }
             catch (IOException e) {
@@ -90,15 +91,14 @@ public class ServerFx extends Application {
 
 
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+    public static void main(String[] args) { launch(args); }
 
     public void startServer() {
         Runnable task = () -> server.startConn(this.serverSocket);
         Thread t = new Thread(task);
         t.setDaemon(true);
         t.start();
+
     }
 
     private Server createServer(int port){
@@ -182,7 +182,8 @@ public class ServerFx extends Application {
 
             scene = new Scene(serverPane, 500, 400);
 
-
+            //to test library
+            Server testLibrary = createServer(5555);
         }
 
 

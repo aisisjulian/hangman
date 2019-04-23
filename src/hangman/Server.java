@@ -1,13 +1,12 @@
 package hangman;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Scanner;
 import java.util.function.Consumer;
 
 // ******************************************************************* //
@@ -36,6 +35,28 @@ public class Server {
 
         //***************************************//
         //  CREATE & INITIALIZE DICTIONARY HERE  //
+
+        /*String token = "";
+        try {
+            //need to add you own path
+            Scanner inFile = new Scanner(new File ("C:/Users/wsiew/IdeaProjects/hangman/src/dictionary-small.txt"));
+            List<String> temps = new ArrayList<String>();
+
+            while (inFile.hasNext()){
+                token = inFile.next();
+                dictionary.add(token);
+            }
+            inFile.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        //prints the library
+        for (int i = 0; i < dictionary.size(); i++){
+            System.out.println(dictionary.get(i));
+        }
+        */
+
     }
 
     public int getPort(){ return this.port; }
@@ -201,6 +222,8 @@ public class Server {
                 send("WAITING-FOR-GUESS", players.get(currentlyGuessing).clientIndex);
             }
         }
+
+
 
         void resetGame(){
             players.clear();
