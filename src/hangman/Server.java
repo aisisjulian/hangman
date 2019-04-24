@@ -267,10 +267,6 @@ public class Server {
 
         void startGame(){
             if(isActive){
-                for(int i = 0; i < players.size(); i++){
-                    send("START", players.get(i).clientIndex);
-                }
-
                 //*****************************************//
                 lettersGuessed = new ArrayList<>(); //index represents letter
                 for(int i = 0; i < 26; i++){ lettersGuessed.add(false); }
@@ -292,6 +288,10 @@ public class Server {
                     word = hardDictionary.get(w);
                 }
 
+                for(int i = 0; i < players.size(); i++){
+                    send("WORD: " + word, players.get(i).clientIndex);
+                    send("START", players.get(i).clientIndex);
+                }
               //  lettersGuessedInWord = new ArrayList<>(); //index represents letter
               //  for(int i = 0; i < wordLength; i++){ lettersGuessedInWord.add(false); }
                 //*****************************************//

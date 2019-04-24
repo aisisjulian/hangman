@@ -11,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
@@ -32,6 +33,7 @@ public class ClientFx extends Application {
     boolean started = false;
 
     private int numLives = 5;
+    private String word = "welcome";
     private Scene startScene, gameScene, endScene;
     private StartScene ss = new StartScene();
     private GameScene gs = new GameScene();
@@ -103,6 +105,10 @@ public class ClientFx extends Application {
     private Client createClient(String IP, int portIn, Stage primaryStage) {
         return new Client(IP, portIn, data -> {
             Platform.runLater(() -> {
+
+                if(data.toString().split(" ")[0].equals("WORD: ")){
+                    word = data.toString().split(" ")[1];
+                }
                 switch (data.toString()) {
                     case "CONNECTION":
                         ss.header.setText("CONNECTED TO SERVER");
@@ -134,6 +140,9 @@ public class ClientFx extends Application {
                         started = false;
                         primaryStage.setScene(this.startScene);
                         break;
+                    case "START":
+                        numLives = 5;
+                        primaryStage.setScene(this.gameScene);
                 }
             });
         });
@@ -257,8 +266,14 @@ public class ClientFx extends Application {
         private HBox row2;
         private HBox row3;
 
+        private HBox wordDisplay;
+
+        private VBox bottomBox;
+
         private Label spaceship;
         private ArrayList<Image> ssImageList;
+
+        private Label header;
 
         public GameScene(){
             gamePane = new BorderPane();
@@ -266,25 +281,41 @@ public class ClientFx extends Application {
             gameBackground = new Background(new BackgroundFill(new ImagePattern(gameBackgroundImage), CornerRadii.EMPTY, Insets.EMPTY));
             gamePane.setBackground(gameBackground);
             initSpaceshipImages();
+            initWordDisplay();
             initKeyboard();
-            scene = new Scene(gamePane, 900, 600);
+            this.bottomBox = new VBox(10, this.wordDisplay, this.keyboardBox);
+            gamePane.setBottom(bottomBox);
+            scene = new Scene(gamePane, 800, 600);
+        }
+
+        public void initWordDisplay(){
+            this.wordDisplay = new HBox(10);
+            for(int i = 0; i < word.length(); i++){
+                Label character = new Label(word.charAt(i)+ "");
+                character.setTextFill(Color.MIDNIGHTBLUE);
+                character.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 33));
+                character.setAlignment(Pos.CENTER);
+                character.setPrefSize(40, 40);
+                character.setBackground(new Background(new BackgroundFill(Color.LEMONCHIFFON, new CornerRadii(5), Insets.EMPTY)));
+                this.wordDisplay.getChildren().add(character);
+            }
+            this.wordDisplay.setAlignment(Pos.CENTER);
         }
 
         public void initSpaceshipImages(){
-            spaceship = new Label();
-            spaceship.setPrefSize(300, 300);
-            spaceship.setAlignment(Pos.BOTTOM_CENTER);
-            spaceship.setPadding(new Insets(0, 0, 20, 0));
-            ssImageList = new ArrayList<>();
+            this.spaceship = new Label();
+            this.spaceship.setAlignment(Pos.BOTTOM_CENTER);
+            this.ssImageList = new ArrayList<>();
 
             for(int i = 0; i < 7; i++){
                 Image spaceShipImage = new Image("spaceship" + (i+1) + ".png");
-                ssImageList.add(spaceShipImage);
+                this.ssImageList.add(spaceShipImage);
             }
-            ImagePattern spaceshipFill = new ImagePattern(ssImageList.get((numLives-5)));
-            Background spaceshipBackground = new Background(new BackgroundFill(spaceshipFill, CornerRadii.EMPTY, Insets.EMPTY));
-            spaceship.setBackground(spaceshipBackground);
-            gamePane.setCenter(spaceship);
+            ImageView iv = new ImageView(ssImageList.get(numLives-5));
+            iv.setFitWidth(350);
+            iv.setFitHeight(350);
+            this.spaceship.setGraphic(iv);
+            gamePane.setCenter(this.spaceship);
         }
 
         public void initKeyboard(){
@@ -319,7 +350,7 @@ public class ClientFx extends Application {
             keyboardBox.setPrefSize(500, 150);
             keyboardBox.setPadding(new Insets(3,0,3,0));
             keyboardBox.setBackground(new Background(new BackgroundFill(new Color(0x19/255.0, 0x19/255.0, 0x70/255.0, .7), new CornerRadii(0), Insets.EMPTY)));
-            gamePane.setBottom(keyboardBox);
+//            gamePane.setBottom(keyboardBox);
 
         }
 
