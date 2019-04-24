@@ -133,6 +133,8 @@ public class ServerFx extends Application {
                     protected Void call() throws Exception {
                         server = new Server(Integer.parseInt(portInput.getText()));
                         server.startConn(ss);
+
+                        System.out.println("Message: " + server.data);
                         return null;
                     }
                 };
@@ -140,8 +142,6 @@ public class ServerFx extends Application {
                 Thread th = new Thread(task);
                 th.setDaemon(true);
                 th.start();
-
-
 
             }
 

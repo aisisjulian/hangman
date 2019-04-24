@@ -42,6 +42,8 @@ public abstract class ClientConnection {
             System.out.println("CONNECTED TO SERVER");
             this.out = out;
 
+            send("Client connected");
+
             while (isConnected) {
                 Serializable data = (Serializable) in.readObject();
                 callback.accept(data);
