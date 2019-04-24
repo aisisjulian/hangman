@@ -121,13 +121,11 @@ public class ServerFx extends Application {
         EventHandler<ActionEvent> createServer = new EventHandler<ActionEvent>() {
 
             public void handle(ActionEvent event) {
-
+                String p = portInput.getText().split("\n")[0];
 
                 try {
-                    String p = portInput.getText().split("\n")[0];
                     port = Integer.parseInt(p);
                     ss  = new ServerSocket(port);
-                    portInput.clear();
                     serverOn.setDisable(true);
                     serverOff.setDisable(false);
                     portBox.setVisible(false);
