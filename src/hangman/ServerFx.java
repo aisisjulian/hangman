@@ -137,13 +137,11 @@ public class ServerFx extends Application {
         EventHandler<ActionEvent> createServer = new EventHandler<ActionEvent>() {
 
             public void handle(ActionEvent event) {
-
+                String p = portInput.getText().split("\n")[0];
 
                 try {
-                    String p = portInput.getText().split("\n")[0];
                     port = Integer.parseInt(p);
                     ss  = new ServerSocket(port);
-                    portInput.clear();
                     serverOn.setDisable(true);
                     serverOff.setDisable(false);
                     portBox.setVisible(false);
@@ -160,7 +158,7 @@ public class ServerFx extends Application {
                 Task<Void> task = new Task<>() {
                     @Override
                     protected Void call() throws Exception {
-                        server = new Server(Integer.parseInt(portInput.getText()));
+                        server = new Server(Integer.parseInt(p));
                         server.startConn(ss);
                         System.out.println("Message: " + server.data);
                         return null;
