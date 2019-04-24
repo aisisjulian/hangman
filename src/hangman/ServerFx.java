@@ -25,12 +25,9 @@ public class ServerFx extends Application {
 
     private Server server;
     private ServerSocket ss;
-    private Boolean isServerOn = false;
 
     private serverDisplay serverScene;
     private int port;
-    private HBox serverOnOptions;
-    private VBox serverOnBox, secTopBox;
 
 
     @Override
@@ -38,8 +35,6 @@ public class ServerFx extends Application {
         primaryStage.setTitle("Space-Man Server");
         serverScene = new serverDisplay();
         primaryStage.setScene(serverScene.scene);
-
-        //serverScene.serverOn.setOnAction(serverScene.connectionOn);
         primaryStage.show();
 
     }
@@ -55,9 +50,9 @@ public class ServerFx extends Application {
     class serverDisplay {
         private Scene scene;
         private BorderPane serverPane;
-        private VBox headerBox, centerBox, topBox;
+        private VBox headerBox, centerBox;
         private HBox portBox;
-        private Label header, message, messageOn;
+        private Label header, message;
         private Label portInputLabel, numconnectedLabel;
         private TextArea portInput;
         private Button serverOn, serverOff;
@@ -77,16 +72,8 @@ public class ServerFx extends Application {
             message.setFont(Font.font("sans-serif", FontWeight.NORMAL, 18));
             message.setAlignment(Pos.CENTER);
 
-            messageOn = new Label("~ server on ~");
-            messageOn.setTextFill(Color.LEMONCHIFFON);
-            messageOn.setFont(Font.font("sans-serif", FontWeight.NORMAL, 18));
-            messageOn.setAlignment(Pos.CENTER);
-
             headerBox = new VBox(10, header, message);
             headerBox.setAlignment(Pos.CENTER);
-
-            topBox = new VBox(10, header, messageOn);
-            topBox.setAlignment(Pos.TOP_CENTER);
 
             portInputLabel = new Label("PORT # : ");
             portInputLabel.setTextFill(Color.WHITE);
@@ -127,28 +114,8 @@ public class ServerFx extends Application {
 
             scene = new Scene(serverPane, 500, 400);
 
-        }
-
-        void serverOnDisplay(){
-
-            portBox.setVisible(false);
-            message.setVisible(false);
-            headerBox.setVisible(false);
-            centerBox.setVisible(false);
-
-            serverOnOptions = new HBox(10, serverOn, serverOff);
-            serverOnOptions.setAlignment(Pos.TOP_CENTER);
-
-            serverOnBox = new VBox(15, serverOnOptions, numconnectedLabel);
-            serverOnBox.setPadding(new Insets(10));
-            serverOnBox.setAlignment(Pos.TOP_CENTER);
-
-            secTopBox = new VBox(1, topBox, serverOnBox);
-
-            serverPane.setTop(secTopBox);
 
         }
-
 
         EventHandler<ActionEvent> createServer = new EventHandler<ActionEvent>() {
 
@@ -156,9 +123,7 @@ public class ServerFx extends Application {
                 port = Integer.parseInt(portInput.getText());
                 try {
                     ss  = new ServerSocket(port);
-                    isServerOn = true;
                 }catch(IOException e){
-                    isServerOn = false;
                     System.out.println("Failure-> creating server socket");
                 }
 
@@ -168,7 +133,6 @@ public class ServerFx extends Application {
                     protected Void call() throws Exception {
                         server = new Server(Integer.parseInt(portInput.getText()));
                         server.startConn(ss);
-                        isServerOn = true;
                         return null;
                     }
                 };
@@ -176,10 +140,6 @@ public class ServerFx extends Application {
                 Thread th = new Thread(task);
                 th.setDaemon(true);
                 th.start();
-
-                if (isServerOn){
-                    serverOnDisplay();
-                }
 
 
 
