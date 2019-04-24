@@ -122,15 +122,9 @@ public class ServerFx extends Application {
 
         void displayServerOn(){
             portInput.setVisible(false);
-            message.setVisible(false);
             portInputLabel.setVisible(false);
 
-            messageOn = new Label("~ server on ~");
-            messageOn.setTextFill(Color.LEMONCHIFFON);
-            messageOn.setFont(Font.font("sans-serif", FontWeight.NORMAL, 18));
-            messageOn.setAlignment(Pos.CENTER);
-
-            topBoxOn = new VBox(10, header, messageOn, serverOptions, numConnectedLabel);
+            topBoxOn = new VBox(10, header, message, serverOptions, numConnectedLabel);
             topBoxOn.setPadding(new Insets(10));
             topBoxOn.setAlignment(Pos.TOP_CENTER);
 
