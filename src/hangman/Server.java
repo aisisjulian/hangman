@@ -3,6 +3,7 @@ package hangman;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,13 +37,7 @@ public class Server {
     public Server(int port){
         this.callback = callback;
         this.port = port;
-
-        //***************************************//
-        //  CREATE & INITIALIZE DICTIONARY HERE  //
         initDictionary();
-
-
-
     }
 
     public void initDictionary(){
@@ -70,16 +65,10 @@ public class Server {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
-
-
-
-
-
-        //prints the library
-        for (int i = 0; i < dictionary.size(); i++){
-            System.out.println(dictionary.get(i));
-        }
+//        prints the library
+//        for (int i = 0; i < dictionary.size(); i++){
+//            System.out.println(dictionary.get(i));
+//        }
 
     }
 
@@ -147,6 +136,8 @@ public class Server {
         private ArrayList<ClientThread> team;
         boolean hasPlayed;
         boolean isPlayingAgain;
+        private int numPlayersChosen;
+        private String difficultyChosen;
 
         // data members for io //
         ObjectOutputStream out;
@@ -162,6 +153,8 @@ public class Server {
             this.isPlayingAgain = false;
             this.hasPlayed = false;
             this.isInGame = false;
+            this.numPlayersChosen = 0;
+            this.difficultyChosen = "";
 
         }
 
@@ -195,11 +188,22 @@ public class Server {
                socket.setTcpNoDelay(true);
                send("CONNECTION", this.clientIndex);
                while(this.isConnected){
-                   data = (Serializable) in.readObject();
+                   Serializable data = (Serializable) in.readObject();
                    System.out.println(data.toString());
+
+                   if(data.toString().split(" ")[0].equals("NUM-PLAYERS: ")){
+                       this.numPlayersChosen = Integer.valueOf(data.toString().split(" ")[1]);
+                   }
+                   if(data.toString().split(" ")[0].equals("DIFFICULTY: ")){
+                       this.difficultyChosen = data.toString().split(" ")[1];
+                       if(this.numPlayersChosen != 0 && !difficultyChosen.equals("")){
+                           this.game = findGame();
+                       }
+                   }
+
+
+
                }
-
-
            }
            catch(Exception e){
                callback.accept("NO-CONNECTION");
@@ -207,6 +211,18 @@ public class Server {
            }
 
 
+        }
+
+        public Game findGame(){
+            for(int i = 0; i < gamesList.size(); i++){
+                Game g = gamesList.get(i);
+                if(!g.isActive && g.numPlayers == this.numPlayersChosen && g.difficulty.equals(this.difficultyChosen)){
+                    g.addPlayer(this);
+                    return g;
+                }
+            }
+            send("WAIT-FOR-PLAYERS", clientIndex);
+            return new Game(this);
         }
 
     }
@@ -220,13 +236,14 @@ public class Server {
     //                                                                     //
     // ******************************************************************* //
     class Game{
-        private int numPlayers = 0;
+        private int numPlayers = 1;
+        private int numPlayersConnected;
+        private String difficulty = "easy";
         private ArrayList<ClientThread> players;
         private boolean isActive;
         private int currentlyGuessing; //index of player of whose turn it is
         private ArrayList<Boolean> lettersGuessed; //can change to array of characters?
         private String word;
-        private int wordLength;
         private ArrayList<Boolean> lettersGuessedInWord; //each index represents a character of the string
         private int lives = 5; //subject to change
 
@@ -234,21 +251,25 @@ public class Server {
             isActive = false;
             players = new ArrayList<>();
             players.add(player);
-            numPlayers++;
+            numPlayersConnected++;
+            numPlayers = player.numPlayersChosen;
+            difficulty = player.difficultyChosen;
         }
 
         void addPlayer(ClientThread player){
             players.add(player);
-            numPlayers++;
+            numPlayersConnected++;
+            if(numPlayersConnected == numPlayers && !isActive){ isActive = true; startGame();} //can change total num players in game HERE
+            else{
+                send("WAIT-FOR-PLAYERS", player.clientIndex);
+            }
         }
 
         void startGame(){
-            if(numPlayers == 4){ isActive = true; } //can change total num players in game HERE
             if(isActive){
                 for(int i = 0; i < players.size(); i++){
                     send("START", players.get(i).clientIndex);
                 }
-
 
                 //*****************************************//
                 lettersGuessed = new ArrayList<>(); //index represents letter
@@ -256,8 +277,23 @@ public class Server {
 
                 //    INSERT CODE THAT PICKS RANDOM WORD   //
 
-                lettersGuessedInWord = new ArrayList<>(); //index represents letter
-                for(int i = 0; i < wordLength; i++){ lettersGuessedInWord.add(false); }
+                Random r = new Random();
+                int w;
+                if(difficulty.equals("easy")){
+                    w = r.nextInt(easyDictionary.size());
+                    word = easyDictionary.get(w);
+                }
+                else if(difficulty.equals("medium")){
+                    w = r.nextInt(mediumDictionary.size());
+                    word = mediumDictionary.get(w);
+                }
+                else{
+                    w = r.nextInt(hardDictionary.size());
+                    word = hardDictionary.get(w);
+                }
+
+              //  lettersGuessedInWord = new ArrayList<>(); //index represents letter
+              //  for(int i = 0; i < wordLength; i++){ lettersGuessedInWord.add(false); }
                 //*****************************************//
 
                 currentlyGuessing = 0;
@@ -269,7 +305,7 @@ public class Server {
 
         void resetGame(){
             players.clear();
-            numPlayers = 0;
+            numPlayersConnected = 0;
         }
 
         void evaluateGuess(){
