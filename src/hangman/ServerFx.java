@@ -141,7 +141,7 @@ public class ServerFx extends Application {
                 Task<Void> task = new Task<>() {
                     @Override
                     protected Void call() throws Exception {
-                        server = new Server(Integer.parseInt(portInput.getText()));
+                        server = new Server(Integer.parseInt(p));
                         server.startConn(ss);
                         System.out.println("Message: " + server.data);
                         return null;
