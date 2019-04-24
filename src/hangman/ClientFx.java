@@ -31,6 +31,7 @@ public class ClientFx extends Application {
     private Thread t;
     boolean started = false;
 
+    private int numLives = 5;
     private Scene startScene, gameScene, endScene;
     private StartScene ss = new StartScene();
     private GameScene gs = new GameScene();
@@ -43,7 +44,13 @@ public class ClientFx extends Application {
     public void start(Stage primaryStage) throws Exception{
         primaryStage.setTitle("Welcome to Spaceman :-)");
         startScene = ss.scene;
+        gameScene = gs.scene;
         primaryStage.setScene(this.startScene);
+
+
+        // ******************************************************************* //
+        //                       START - EVENT HANDLERS                        //
+        // ******************************************************************* //
 
         ss.connectButton.setOnAction(event->{
             if(!ss.ipInput.getText().isEmpty() && !ss.portInput.getText().isEmpty()){
@@ -65,6 +72,25 @@ public class ClientFx extends Application {
                 }
             }
         });
+
+        ss.startButton.setOnAction(event->{
+            primaryStage.setScene(gameScene);
+            ss.startButton.setDisable(true);
+        });
+
+        // ******************************************************************* //
+        //                       GAME - EVENT HANDLERS                         //
+        // ******************************************************************* //
+
+
+
+
+        // ******************************************************************* //
+        //                       END - EVENT HANDLERS                          //
+        // ******************************************************************* //
+
+
+
 
 
         primaryStage.show();
@@ -101,7 +127,7 @@ public class ClientFx extends Application {
                         ss.portInput.clear();
                         ss.portInput.setVisible(true);
                         ss.connectButton.setDisable(false);
-                        ss.connectButton.setText("connect");
+                        ss.connectButton.setText("CONNECT");
                         ss.header.setText("NO CONNECTION");
                         ss.header.setPrefSize(300, 40);
                         ss.header.setAlignment(Pos.CENTER);
@@ -137,21 +163,24 @@ public class ClientFx extends Application {
 
             header = new Label("");
             header.setTextFill(Color.WHITE);
-            header.setPrefSize(300, 40);
+            header.setPrefSize(250, 40);
             header.setAlignment(Pos.CENTER);
-            portLabel = new Label("Port : ");
+            portLabel = new Label("PORT :");
             portLabel.setTextFill(Color.WHITE);
-            portLabel.setPrefSize(50, 20);
-            portLabel.setTextAlignment(TextAlignment.CENTER);
+            portLabel.setFont(Font.font("Courier", FontWeight.BOLD, 17));
+            portLabel.setPrefSize(75, 15);
             portInput = new TextArea();
-            portInput.setPrefSize(150, 20);
+            portInput.setPrefSize(150, 15);
+            portInput.setPadding(new Insets(5, 0, 5, 0));
 
-            ipLabel = new Label("IP: ");
+
+            ipLabel = new Label(" IP  :");
             ipLabel.setTextFill(Color.WHITE);
-            ipLabel.setPrefSize(50, 20);
-            ipLabel.setTextAlignment(TextAlignment.CENTER);
+            ipLabel.setFont(Font.font("Courier", FontWeight.BOLD, 17));
+            ipLabel.setPrefSize(75, 15);
             ipInput = new TextArea();
-            ipInput.setPrefSize(150, 20);
+            ipInput.setPrefSize(150, 15);
+            ipInput.setPadding(new Insets(5, 0, 5, 0));
 
             HBox ipBox = new HBox(ipLabel, ipInput);
             HBox portBox = new HBox(portLabel, portInput);
@@ -159,7 +188,7 @@ public class ClientFx extends Application {
             portBox.setAlignment(Pos.CENTER);
 
             connectButton = new Button("CONNECT");
-            connectButton.setPrefSize(250, 80);
+            connectButton.setPrefSize(175, 80);
             connectButton.setBackground(buttonBackground);
             connectButton.setTextFill(Color.NAVY);
             connectButton.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 22));
@@ -218,35 +247,88 @@ public class ClientFx extends Application {
 
     class GameScene{
        // private Button A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z;
-        private ArrayList<Button> keyboard = new ArrayList<>();
-        private HBox row1 = new HBox(10);
-        private HBox row2 = new HBox(10);
-        private HBox row3 = new HBox(10);
+        private Scene scene;
+        private Image gameBackgroundImage;
+        private Background gameBackground;
+
+        private ArrayList<Button> keyboard;
+        private VBox keyboardBox;
+        private HBox row1;
+        private HBox row2;
+        private HBox row3;
+
+        private Label spaceship;
+        private ArrayList<Image> ssImageList;
 
         public GameScene(){
+            gamePane = new BorderPane();
+            gameBackgroundImage = new Image("gameScene2.png");
+            gameBackground = new Background(new BackgroundFill(new ImagePattern(gameBackgroundImage), CornerRadii.EMPTY, Insets.EMPTY));
+            gamePane.setBackground(gameBackground);
+            initSpaceshipImages();
+            initKeyboard();
+            scene = new Scene(gamePane, 900, 600);
+        }
+
+        public void initSpaceshipImages(){
+            spaceship = new Label();
+            spaceship.setPrefSize(300, 300);
+            spaceship.setAlignment(Pos.BOTTOM_CENTER);
+            spaceship.setPadding(new Insets(0, 0, 20, 0));
+            ssImageList = new ArrayList<>();
+
+            for(int i = 0; i < 7; i++){
+                Image spaceShipImage = new Image("spaceship" + (i+1) + ".png");
+                ssImageList.add(spaceShipImage);
+            }
+            ImagePattern spaceshipFill = new ImagePattern(ssImageList.get((numLives-5)));
+            Background spaceshipBackground = new Background(new BackgroundFill(spaceshipFill, CornerRadii.EMPTY, Insets.EMPTY));
+            spaceship.setBackground(spaceshipBackground);
+            gamePane.setCenter(spaceship);
+        }
+
+        public void initKeyboard(){
+            this.keyboard = new ArrayList<>();
+            this.row1 = new HBox(10);
+            this.row2 = new HBox(10);
+            this.row3 = new HBox(10);
+
             for (int i = 0; i < 26; i++){
                 char letter = (char)(65 + i);
-                Button k = new Button(letter + "");
-                keyboard.add(k);
+                Button k = new Button("" + letter + "");
+                k.setTextAlignment(TextAlignment.CENTER);
+                this.keyboard.add(k);
+                this.keyboard.get(i).setPrefSize(32, 32);
                 k.setOnAction(sendLetter);
                 if (i < 9){
                     row1.getChildren().add(k);
                 }
-                else if(i < 18){
+                else if(i < 17){
                     row2.getChildren().add(k);
                 }
                 else {
                     row3.getChildren().add(k);
                 }
             }
+
+            row1.setAlignment(Pos.CENTER);
+            row2.setAlignment(Pos.CENTER);
+            row3.setAlignment(Pos.CENTER);
+            keyboardBox = new VBox(10, row1, row2, row3);
+            keyboardBox.setAlignment(Pos.CENTER);
+            keyboardBox.setPrefSize(500, 150);
+            keyboardBox.setPadding(new Insets(3,0,3,0));
+            keyboardBox.setBackground(new Background(new BackgroundFill(new Color(0x19/255.0, 0x19/255.0, 0x70/255.0, .7), new CornerRadii(0), Insets.EMPTY)));
+            gamePane.setBottom(keyboardBox);
+
         }
 
         EventHandler<ActionEvent> sendLetter = event -> {
-            Button b = (Button) event.getSource();
+            int i = this.keyboard.indexOf((Button) event.getSource());
+            Button b = this.keyboard.get(i);
             String s = b.getText();
             b.setDisable(true);
-            //  keyboard.getIndexOf();
-            // send s;
+            client.send(s);
         };
     }
 

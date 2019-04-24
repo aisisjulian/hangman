@@ -32,13 +32,7 @@ public class Server {
     public Server(int port){
         this.callback = callback;
         this.port = port;
-
-        //***************************************//
-        //  CREATE & INITIALIZE DICTIONARY HERE  //
         initDictionary();
-
-
-
     }
 
     public void initDictionary(){
@@ -154,6 +148,8 @@ public class Server {
             this.isPlayingAgain = false;
             this.hasPlayed = false;
             this.isInGame = false;
+            this.numPlayersChosen = 0;
+            this.difficultyChosen = "";
 
         }
 
@@ -187,9 +183,21 @@ public class Server {
                while(this.isConnected){
                    Serializable data = (Serializable) in.readObject();
                    System.out.println(data.toString());
+
+
+                   if(data.toString().split(" ")[0].equals("NUM-PLAYERS: ")){
+                       this.numPlayersChosen = Integer.valueOf(data.toString().split(" ")[1]);
+                   }
+                   if(data.toString().split(" ")[0].equals("DIFFICULTY: ")){
+                       this.difficultyChosen = data.toString().split(" ")[1];
+                       if(this.numPlayersChosen != 0 && !difficultyChosen.equals("")){
+                           this.game = findGame();
+                       }
+                   }
+
+
+
                }
-
-
            }
            catch(Exception e){
                callback.accept("NO-CONNECTION");
@@ -197,6 +205,18 @@ public class Server {
            }
 
 
+        }
+
+        public Game findGame(){
+            for(int i = 0; i < gamesList.size(); i++){
+                Game g = gamesList.get(i);
+                if(!g.isActive && g.numPlayers == this.numPlayersChosen && g.difficulty.equals(this.difficultyChosen)){
+                    g.addPlayer(this);
+                    return g;
+                }
+            }
+            send("WAIT-FOR-PLAYERS", clientIndex);
+            return new Game(this);
         }
 
     }
@@ -233,15 +253,17 @@ public class Server {
         void addPlayer(ClientThread player){
             players.add(player);
             numPlayersConnected++;
+            if(numPlayersConnected == numPlayers && !isActive){ isActive = true; startGame();} //can change total num players in game HERE
+            else{
+                send("WAIT-FOR-PLAYERS", player.clientIndex);
+            }
         }
 
         void startGame(){
-            if(numPlayersConnected == numPlayers){ isActive = true; } //can change total num players in game HERE
             if(isActive){
                 for(int i = 0; i < players.size(); i++){
                     send("START", players.get(i).clientIndex);
                 }
-
 
                 //*****************************************//
                 lettersGuessed = new ArrayList<>(); //index represents letter

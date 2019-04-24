@@ -53,7 +53,7 @@ public class ServerFx extends Application {
         private VBox headerBox, centerBox;
         private HBox portBox;
         private Label header, message;
-        private Label portInputLabel, numconnectedLabel;
+        private Label portInputLabel, numConnectedLabel;
         private TextArea portInput;
         private Button serverOn, serverOff;
 
@@ -86,10 +86,10 @@ public class ServerFx extends Application {
             portBox = new HBox(5, portInputLabel, portInput);
             portBox.setAlignment(Pos.CENTER);
 
-            numconnectedLabel = new Label("[     Clients Connected:   0   ]");
-            numconnectedLabel.setTextFill(Color.WHITE);
-            numconnectedLabel.setFont(Font.font("sans-serif", FontWeight.BOLD, 15));
-            numconnectedLabel.setAlignment(Pos.CENTER);
+            numConnectedLabel = new Label("[     Clients Connected:   0   ]");
+            numConnectedLabel.setTextFill(Color.WHITE);
+            numConnectedLabel.setFont(Font.font("sans-serif", FontWeight.BOLD, 15));
+            numConnectedLabel.setAlignment(Pos.CENTER);
 
             serverOn = new Button("ON");
             serverOn.setBackground(new Background(new BackgroundFill(Color.LEMONCHIFFON, new CornerRadii(10), Insets.EMPTY)));
@@ -101,11 +101,12 @@ public class ServerFx extends Application {
             serverOff.setBackground(new Background(new BackgroundFill(Color.LEMONCHIFFON, new CornerRadii(10), Insets.EMPTY)));
             serverOff.setPrefSize(60, 30);
             serverOff.setTextFill(Color.MIDNIGHTBLUE);
+            serverOff.setDisable(true);
 
             HBox serverOptions = new HBox(10, serverOn, serverOff);
             serverOptions.setAlignment(Pos.CENTER);
 
-            centerBox = new VBox(15, portBox, serverOptions, numconnectedLabel);
+            centerBox = new VBox(15, portBox, serverOptions, numConnectedLabel);
             centerBox.setPadding(new Insets(50));
             centerBox.setAlignment(Pos.TOP_CENTER);
 
@@ -120,11 +121,22 @@ public class ServerFx extends Application {
         EventHandler<ActionEvent> createServer = new EventHandler<ActionEvent>() {
 
             public void handle(ActionEvent event) {
-                port = Integer.parseInt(portInput.getText());
+
+
                 try {
+                    String p = portInput.getText().split("\n")[0];
+                    port = Integer.parseInt(p);
                     ss  = new ServerSocket(port);
+                    portInput.clear();
+                    serverOn.setDisable(true);
+                    serverOff.setDisable(false);
+                    portBox.setVisible(false);
+                    message.setText("~ server on ~");
                 }catch(IOException e){
                     System.out.println("Failure-> creating server socket");
+                    portInput.clear();
+                    serverOn.setDisable(false);
+                    serverOff.setDisable(true);
                 }
 
 
@@ -140,9 +152,6 @@ public class ServerFx extends Application {
                 Thread th = new Thread(task);
                 th.setDaemon(true);
                 th.start();
-
-
-
             }
 
         };

@@ -20,8 +20,14 @@ public abstract class ClientConnection {
     public void setConnected(boolean c){ this.isConnected = c; }
     public boolean getConnected(){ return this.isConnected; }
 
-    public void send(Serializable data) throws Exception{
-        this.out.writeObject(data);
+    public void send(Serializable data){
+        try{
+            this.out.writeObject(data);
+        }
+        catch(Exception e){
+            System.out.println("Exception in send()");
+        }
+
     }
 
     public void closeConn() throws Exception{
