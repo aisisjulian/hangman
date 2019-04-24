@@ -25,6 +25,7 @@ public class ServerFx extends Application {
 
     private Server server;
     private ServerSocket ss;
+    private Boolean isServerOn;
 
     private serverDisplay serverScene;
     private int port;
@@ -50,14 +51,15 @@ public class ServerFx extends Application {
     class serverDisplay {
         private Scene scene;
         private BorderPane serverPane;
-        private VBox headerBox, centerBox;
-        private HBox portBox;
-        private Label header, message;
+        private VBox headerBox, centerBox, topBoxOn;
+        private HBox portBox, serverOptions;
+        private Label header, message, messageOn;
         private Label portInputLabel, numConnectedLabel;
         private TextArea portInput;
         private Button serverOn, serverOff;
 
         serverDisplay() {
+            isServerOn = false;
             this.serverPane = new BorderPane();
             this.serverPane.setBackground(new Background(new BackgroundFill(Color.MIDNIGHTBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
             this.serverPane.setPrefSize(500, 400);
@@ -103,7 +105,7 @@ public class ServerFx extends Application {
             serverOff.setTextFill(Color.MIDNIGHTBLUE);
             serverOff.setDisable(true);
 
-            HBox serverOptions = new HBox(10, serverOn, serverOff);
+            serverOptions = new HBox(10, serverOn, serverOff);
             serverOptions.setAlignment(Pos.CENTER);
 
             centerBox = new VBox(15, portBox, serverOptions, numConnectedLabel);
@@ -115,6 +117,20 @@ public class ServerFx extends Application {
 
             scene = new Scene(serverPane, 500, 400);
 
+
+        }
+
+        void displayServerOn(){
+            portInput.setVisible(false);
+            portInputLabel.setVisible(false);
+
+            topBoxOn = new VBox(10, header, message, serverOptions, numConnectedLabel);
+            topBoxOn.setPadding(new Insets(10));
+            topBoxOn.setAlignment(Pos.TOP_CENTER);
+
+            serverPane.setTop(topBoxOn);
+
+            serverOn.setDisable(true);
 
         }
 
@@ -130,6 +146,7 @@ public class ServerFx extends Application {
                     serverOff.setDisable(false);
                     portBox.setVisible(false);
                     message.setText("~ server on ~");
+                    isServerOn = true;
                 }catch(IOException e){
                     System.out.println("Failure-> creating server socket");
                     portInput.clear();
@@ -151,6 +168,10 @@ public class ServerFx extends Application {
                 Thread th = new Thread(task);
                 th.setDaemon(true);
                 th.start();
+
+                if (isServerOn){
+                    displayServerOn();
+                }
             }
 
         };
