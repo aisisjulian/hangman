@@ -4,6 +4,10 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Scanner;
 import java.util.function.Consumer;
 
 // ******************************************************************* //
@@ -16,6 +20,7 @@ public class Server {
 
     private int port;
     private Consumer<Serializable> callback;
+    Serializable data;
 
     private ArrayList<ClientThread> clientThreadList = new ArrayList<>();
     private HashMap<String, ClientThread> clientThreadMap = new HashMap<>();
@@ -171,6 +176,8 @@ public class Server {
         public void setGame(Game g){ this.game = g; }
         public Game getGame(){ return this.game; }
 
+        public Serializable getMessage(){ return data; }
+
 
         public void run() {
            try(
@@ -183,7 +190,6 @@ public class Server {
                while(this.isConnected){
                    Serializable data = (Serializable) in.readObject();
                    System.out.println(data.toString());
-
 
                    if(data.toString().split(" ")[0].equals("NUM-PLAYERS: ")){
                        this.numPlayersChosen = Integer.valueOf(data.toString().split(" ")[1]);
