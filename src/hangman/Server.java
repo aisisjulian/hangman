@@ -308,8 +308,66 @@ public class Server {
             numPlayersConnected = 0;
         }
 
-        void evaluateGuess(){
+
+        void evaluateGuess(String letter){
             //update lettersGuessed
+
+            switch (letter) {
+                case "A":
+                    lettersGuessed.set(0, true);
+                case "B":
+                    lettersGuessed.set(1, true);
+                case "C":
+                    lettersGuessed.set(2, true);
+                case "D":
+                    lettersGuessed.set(3, true);
+                case "E":
+                    lettersGuessed.set(4, true);
+                case "F":
+                    lettersGuessed.set(5, true);
+                case "G":
+                    lettersGuessed.set(6, true);
+                case "H":
+                    lettersGuessed.set(7, true);
+                case "I":
+                    lettersGuessed.set(8, true);
+                case "J":
+                    lettersGuessed.set(9, true);
+                case "K":
+                    lettersGuessed.set(10, true);
+                case "L":
+                    lettersGuessed.set(11, true);
+                case "M":
+                    lettersGuessed.set(12, true);
+                case "N":
+                    lettersGuessed.set(13, true);
+                case "O":
+                    lettersGuessed.set(14, true);
+                case "P":
+                    lettersGuessed.set(15, true);
+                case "Q":
+                    lettersGuessed.set(16, true);
+                case "R":
+                    lettersGuessed.set(17, true);
+                case "S":
+                    lettersGuessed.set(18, true);
+                case "T":
+                    lettersGuessed.set(19, true);
+                case "U":
+                    lettersGuessed.set(20, true);
+                case "V":
+                    lettersGuessed.set(21, true);
+                case "W":
+                    lettersGuessed.set(22, true);
+                case "X":
+                    lettersGuessed.set(23, true);
+                case "Y":
+                    lettersGuessed.set(24, true);
+                case "Z":
+                    lettersGuessed.set(25, true);
+
+            }
+
 
             //if wrong guess, update lives, check for loss
 
