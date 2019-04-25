@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -31,6 +32,7 @@ public class ClientFx extends Application {
     private Runnable task;
     private Thread t;
     boolean started = false;
+    boolean isSinglePlayer = false;
 
     private int numLives = 5;
     private String word = "welcome";
@@ -41,6 +43,7 @@ public class ClientFx extends Application {
     private BorderPane startPane, gamePane, endPane;
     private VBox connectionBox;
     private VBox optionsBox;
+    final String HOVERED_BUTTON_STYLE = "-fx-background-color: deeppink,  -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;";
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -210,12 +213,27 @@ public class ClientFx extends Application {
             singlePlayerButton.setPrefSize(150, 40);
             singlePlayerButton.setTextFill(Color.INDIGO);
             singlePlayerButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
+            singlePlayerButton.setOnMouseClicked(e -> {
+                singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
+                multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            });
+            singlePlayerButton.setOnAction(e->{
+                twoPlayerButton.setDisable(true); threePlayerButton.setDisable(true); fourPlayerButton.setDisable(true);
+            } );
 
             multiPlayerButton = new Button("Multi-Player");
             multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
             multiPlayerButton.setPrefSize(150, 40);
             multiPlayerButton.setTextFill(Color.INDIGO);
             multiPlayerButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
+            multiPlayerButton.setOnMouseClicked(e -> {
+                multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
+                singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            });
+            multiPlayerButton.setOnAction(e->{
+                isSinglePlayer=false;
+                twoPlayerButton.setDisable(false); threePlayerButton.setDisable(false); fourPlayerButton.setDisable(false);
+            });
 
             HBox playerMode = new HBox(10, singlePlayerButton, multiPlayerButton);
             playerMode.setAlignment(Pos.CENTER);
@@ -261,6 +279,7 @@ public class ClientFx extends Application {
         private Background gameBackground;
 
         private ArrayList<Button> keyboard;
+        private HBox bottomDisplay; //to display keyboard and letter entered
         private VBox keyboardBox;
         private HBox row1;
         private HBox row2;
@@ -269,6 +288,12 @@ public class ClientFx extends Application {
         private HBox wordDisplay;
 
         private VBox bottomBox;
+
+        private VBox enterBox;
+        private Label letterChosenLabel;
+        private String letter;
+        private Button pressed;
+        private Button sumbitButton;
 
         private Label spaceship;
         private ArrayList<Image> ssImageList;
@@ -283,7 +308,8 @@ public class ClientFx extends Application {
             initSpaceshipImages();
             initWordDisplay();
             initKeyboard();
-            this.bottomBox = new VBox(10, this.wordDisplay, this.keyboardBox);
+            this.bottomBox = new VBox(10, this.wordDisplay, this.bottomDisplay);
+            bottomBox.setAlignment(Pos.CENTER);
             gamePane.setBottom(bottomBox);
             scene = new Scene(gamePane, 800, 600);
         }
@@ -330,7 +356,7 @@ public class ClientFx extends Application {
                 k.setTextAlignment(TextAlignment.CENTER);
                 this.keyboard.add(k);
                 this.keyboard.get(i).setPrefSize(32, 32);
-                k.setOnAction(sendLetter);
+                k.setOnAction(displayLetter);
                 if (i < 9){
                     row1.getChildren().add(k);
                 }
@@ -347,19 +373,48 @@ public class ClientFx extends Application {
             row3.setAlignment(Pos.CENTER);
             keyboardBox = new VBox(10, row1, row2, row3);
             keyboardBox.setAlignment(Pos.CENTER);
-            keyboardBox.setPrefSize(500, 150);
+            keyboardBox.setPrefSize(410, 150);
             keyboardBox.setPadding(new Insets(3,0,3,0));
-            keyboardBox.setBackground(new Background(new BackgroundFill(new Color(0x19/255.0, 0x19/255.0, 0x70/255.0, .7), new CornerRadii(0), Insets.EMPTY)));
+            //keyboardBox.setBackground(new Background(new BackgroundFill(new Color(0x19/255.0, 0x19/255.0, 0x70/255.0, .7), new CornerRadii(0), Insets.EMPTY)));
 //            gamePane.setBottom(keyboardBox);
+
+            /*dispaly letter entered code*/
+            bottomDisplay = new HBox();
+            bottomDisplay.setBackground(new Background(new BackgroundFill(new Color(0x19/255.0, 0x19/255.0, 0x70/255.0, .7), new CornerRadii(0), Insets.EMPTY)));
+            this.enterBox = new VBox(10);
+            letterChosenLabel = new Label();
+            letterChosenLabel.setTextFill(Color.GOLD);
+            letterChosenLabel.setAlignment(Pos.BASELINE_LEFT);
+            letterChosenLabel.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 42));
+
+            sumbitButton = new Button("submit");
+            sumbitButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 12));
+            sumbitButton.setAlignment(Pos.CENTER);
+            sumbitButton.setOnAction(sendLetter);
+            enterBox.getChildren().addAll(letterChosenLabel, sumbitButton);
+            enterBox.setPrefSize(120, 150);
+            enterBox.setPadding(new Insets(0, 0,0, 0));
+
+            bottomDisplay.setMaxSize(560, 150);
+            this.bottomDisplay.setAlignment(Pos.CENTER);
+            this.bottomDisplay.getChildren().addAll(this.enterBox, this.keyboardBox);
+            this.enterBox.setAlignment(Pos.CENTER);
 
         }
 
         EventHandler<ActionEvent> sendLetter = event -> {
+            pressed.setDisable(true);
+            if (!(letter.isBlank())) {
+                client.send(letter);
+                sumbitButton.setDisable(true); /*disable until its that players turn*/
+            }
+        };
+
+        EventHandler<ActionEvent> displayLetter = event -> {
             int i = this.keyboard.indexOf((Button) event.getSource());
-            Button b = this.keyboard.get(i);
-            String s = b.getText();
-            b.setDisable(true);
-            client.send(s);
+            pressed = this.keyboard.get(i);
+            letter = pressed.getText();
+            letterChosenLabel.setText(letter);
         };
     }
 
