@@ -28,11 +28,12 @@ public class ClientFx extends Application {
     private ClientConnection client;
     private boolean isConnected = false;
     private ArrayList<String> clientsConnected = new ArrayList<>();
-
+    private ArrayList<String> lettersPlayed = new ArrayList<>();
     private Runnable task;
     private Thread t;
-    boolean started = false;
-    boolean isSinglePlayer = false;
+    private boolean started = false;
+    private boolean isSinglePlayer = false;
+    private boolean alreadyplayed = false;
 
     private int numLives = 5;
     private String word = "welcome";
@@ -160,7 +161,7 @@ public class ClientFx extends Application {
         private Scene scene;
         private Image startBackgroundImage;
         private Background startBackground;
-        private Button singlePlayerButton, multiPlayerButton, twoPlayerButton, threePlayerButton, fourPlayerButton;
+        private Button singlePlayerButton, multiPlayerButton, twoPlayerButton, threePlayerButton, fourPlayerButton, easyButton, mediumButton, hardButton;
         private Button connectButton, startButton;
         private TextArea ipInput, portInput;
         private Label header, ipLabel, portLabel, numPlayersLabel;
@@ -256,6 +257,44 @@ public class ClientFx extends Application {
             fourPlayerButton.setTextFill(Color.INDIGO);
             fourPlayerButton.setFont(Font.font("verdana", FontWeight.BOLD, 11));
 
+            HBox difficultyBox;
+            easyButton = new Button("Easy");
+            easyButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            easyButton.setPrefSize(80, 20);
+            easyButton.setTextFill(Color.INDIGO);
+            easyButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 14));
+            easyButton.setOnMouseClicked(e -> {
+                client.send("DIFFICULTY: easy");
+                easyButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
+                mediumButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+                hardButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            });
+            mediumButton = new Button("Medium");
+            mediumButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            mediumButton.setPrefSize(80, 20);
+            mediumButton.setTextFill(Color.INDIGO);
+            mediumButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 14));
+            mediumButton.setOnMouseClicked(e -> {
+                client.send("DIFFICULTY: medium");
+                mediumButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
+                easyButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+                hardButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            });
+            hardButton = new Button("Hard");
+            hardButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            hardButton.setPrefSize(90, 20);
+            hardButton.setTextFill(Color.INDIGO);
+            hardButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 14));
+            hardButton.setOnMouseClicked(e -> {
+                client.send("DIFFICULTY: hard");
+                hardButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
+                mediumButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+                easyButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            });
+            difficultyBox = new HBox(8, easyButton, mediumButton, hardButton);
+            difficultyBox.setAlignment(Pos.CENTER);
+            easyButton.setAlignment(Pos.CENTER); mediumButton.setAlignment(Pos.CENTER); hardButton.setAlignment(Pos.CENTER);
+
             startButton = new Button("START");
             startButton.setPrefSize(150, 80);
             startButton.setBackground(buttonBackground);
@@ -265,7 +304,7 @@ public class ClientFx extends Application {
 
             HBox numPlayersBox = new HBox(8, twoPlayerButton, threePlayerButton, fourPlayerButton);
             numPlayersBox.setAlignment(Pos.CENTER);
-            optionsBox = new VBox(15, header, playerMode, numPlayersBox, startButton);
+            optionsBox = new VBox(15, header, playerMode, numPlayersBox, difficultyBox, startButton);
             optionsBox.setAlignment(Pos.CENTER);
             startPane.setCenter(connectionBox);
             scene = new Scene(startPane, 500, 500);
@@ -406,6 +445,7 @@ public class ClientFx extends Application {
             pressed.setDisable(true);
             if (!(letter.isBlank())) {
                 client.send(letter);
+                lettersPlayed.add(letter);
                 sumbitButton.setDisable(true); /*disable until its that players turn*/
             }
         };
@@ -415,6 +455,10 @@ public class ClientFx extends Application {
             pressed = this.keyboard.get(i);
             letter = pressed.getText();
             letterChosenLabel.setText(letter);
+            for (int j = 0; j < lettersPlayed.size(); j++){
+                if (lettersPlayed.get(j).equals(letter)){ alreadyplayed = true; }
+            }
+            if (!alreadyplayed){ sumbitButton.setDisable(false); }
         };
     }
 
