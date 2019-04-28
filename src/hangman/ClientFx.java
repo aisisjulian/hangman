@@ -59,6 +59,7 @@ public class ClientFx extends Application {
         startScene = ss.scene;
         gameScene = gs.scene;
         waitScene = ws.scene;
+        endScene = es.scene;
         primaryStage.setScene(this.startScene);
 
 
@@ -125,11 +126,22 @@ public class ClientFx extends Application {
                     this.gs = new GameScene();
                     this.gameScene = gs.scene;
                     primaryStage.setScene(this.gameScene);
+                    /*
+                    this.es = new EndScene();
+                    this.endScene = es.scene;
+                    primaryStage.setScene(endScene);*/
                 }
                 if(data.toString().split(" ")[0].equals("LETTER:")){
                     String l = data.toString().split(" ")[1];
                     lettersPlayed.add(l);
-                    gs.updateWordDisplay();
+                    if (numLives != 0){
+                        gs.updateWordDisplay();
+                    }
+                    if (numLives == 0){
+                        this.es = new EndScene();
+                        this.endScene = es.scene;
+                        primaryStage.setScene(endScene);
+                    }
                     boolean eval = false;
                     for(int i = 0; i < word.length(); i++){
                         if(word.charAt(i) == l.charAt(0)){
@@ -316,6 +328,8 @@ public class ClientFx extends Application {
                 fourPlayerButton.setOpacity(.5);
             });
 
+
+
             HBox difficultyBox;
             easyButton = new Button("Easy");
             easyButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
@@ -430,6 +444,7 @@ public class ClientFx extends Application {
         private String letter;
         private Button pressed;
         private Button submitButton;
+        private Button endButton;
 
         private Label spaceship;
         private ArrayList<Image> ssImageList;
@@ -553,7 +568,12 @@ public class ClientFx extends Application {
             submitButton = new Button("submit");
             submitButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 12));
             submitButton.setAlignment(Pos.CENTER);
-            submitButton.setOnAction(sendLetter);
+            if (numLives != 0){
+                submitButton.setOnAction(sendLetter);
+            }
+            else{
+
+            }
             enterBox.getChildren().addAll(letterChosenLabel, submitButton);
             enterBox.setPrefSize(120, 150);
             enterBox.setPadding(new Insets(0, 0,0, 0));
@@ -584,25 +604,32 @@ public class ClientFx extends Application {
 
         EventHandler<ActionEvent> sendLetter = event -> {
             pressed.setDisable(true);
-            if (!(letter.isBlank())) {
-                client.send("LETTER: " + letter);
-                lettersPlayed.add(letter);
-                submitButton.setDisable(true); /*disable until its that players turn*/
-                updateWordDisplay();
-                boolean eval = false;
-                for(int i = 0; i < word.length(); i++){
-                    if(word.charAt(i) == letter.charAt(0)){
-                        eval = true;
+            if (numLives != 0){
+                if (!(letter.isBlank())) {
+                    client.send("LETTER: " + letter);
+                    lettersPlayed.add(letter);
+                    submitButton.setDisable(true); /*disable until its that players turn*/
+                    updateWordDisplay();
+                    boolean eval = false;
+                    for(int i = 0; i < word.length(); i++){
+                        if(word.charAt(i) == letter.charAt(0)){
+                            eval = true;
+                        }
                     }
+                    if(!eval){
+                        numLives--;
+                        // send
+                        updateSpaceShipImage();
+                    }
+                    disableKeyboard();
+                    letter = "";
                 }
-                if(!eval){
-                    numLives--;
-                    // send
-                    updateSpaceShipImage();
-                }
-                disableKeyboard();
-                letter = "";
             }
+            else{
+                System.out.println("GAME OVER");
+
+            }
+
         };
 
         EventHandler<ActionEvent> displayLetter = event -> {
@@ -621,6 +648,10 @@ public class ClientFx extends Application {
         private Scene scene;
         private Image endBackgroundImage;
         private Background endBackground;
+        private Label endTitle;
+        private Button quitBtn, playAgainBtn;
+        private HBox buttonBox;
+        private VBox endBox;
 
         public EndScene(){
             endPane = new BorderPane();
@@ -628,10 +659,50 @@ public class ClientFx extends Application {
             endBackground = new Background(new BackgroundFill(new ImagePattern(endBackgroundImage), CornerRadii.EMPTY, Insets.EMPTY));
             endPane.setBackground(endBackground);
 
+            endTitle = new Label("GAME OVER");
+            endTitle.setPrefSize(1000, 50);
+
+            endTitle.setTextFill(Color.WHITE);
+            endTitle.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 50));
+            endTitle.setAlignment(Pos.CENTER);
+            //endPane.setTop(endTitle);
+
             // display letters guessed
+            for (int i = 0; i < lettersPlayed.size(); i++){
+                System.out.print(lettersPlayed.get(i));
+            }
+
             // display the final word
             // display win or lose
             // ask to quit or new game
+            quitBtn = new Button("Quit");
+
+            quitBtn.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            quitBtn.setPrefSize(130, 40);
+            quitBtn.setTextFill(Color.INDIGO);
+            quitBtn.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
+
+            quitBtn.setOnAction(actionEvent -> {
+                System.out.println("Quit game");
+            });
+
+            playAgainBtn = new Button("Play Again");
+
+            playAgainBtn.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            playAgainBtn.setPrefSize(130, 40);
+            playAgainBtn.setTextFill(Color.INDIGO);
+            playAgainBtn.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
+
+            playAgainBtn.setOnAction(actionEvent -> {
+                System.out.println("Play Again");
+            });
+
+            buttonBox = new HBox(10, quitBtn, playAgainBtn);
+            buttonBox.setAlignment(Pos.CENTER);
+
+            //endPane.setCenter(buttonBox);
+            endBox = new VBox(30, endTitle, buttonBox);
+            endPane.setCenter(endBox);
 
             scene = new Scene(endPane, 500, 500);
         }
