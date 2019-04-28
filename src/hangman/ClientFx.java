@@ -87,8 +87,8 @@ public class ClientFx extends Application {
             if(!chosenDifficulty.equals("") && chosenNumPlayers != 0){
                 client.send("NUM-PLAYERS: " + chosenNumPlayers);
                 client.send("DIFFICULTY: " + chosenDifficulty);
+                primaryStage.setScene(waitScene);
             }
-            primaryStage.setScene(waitScene);
 
             //primaryStage.setScene(gameScene);
             ss.startButton.setDisable(true);
@@ -120,8 +120,26 @@ public class ClientFx extends Application {
         return new Client(IP, portIn, data -> {
             Platform.runLater(() -> {
 
-                if(data.toString().split(" ")[0].equals("WORD: ")){
-                    word = data.toString().split(" ")[1];
+                if(data.toString().split(" ")[0].equals("WORD:")){
+                    this.word = data.toString().split(" ")[1];
+                    this.gs = new GameScene();
+                    this.gameScene = gs.scene;
+                    primaryStage.setScene(this.gameScene);
+                }
+                if(data.toString().split(" ")[0].equals("LETTER:")){
+                    String l = data.toString().split(" ")[1];
+                    lettersPlayed.add(l);
+                    gs.updateWordDisplay();
+                    boolean eval = false;
+                    for(int i = 0; i < word.length(); i++){
+                        if(word.charAt(i) == l.charAt(0)){
+                           eval = true;
+                        }
+                    }
+                    if(!eval){
+                        numLives--;
+                        gs.updateSpaceShipImage();
+                    }
                 }
                 switch (data.toString()) {
                     case "CONNECTION":
@@ -156,7 +174,10 @@ public class ClientFx extends Application {
                         break;
                     case "START":
                         numLives = 5;
-                        primaryStage.setScene(this.gameScene);
+                        break;
+                    case "WAITING-FOR-GUESS":
+                        gs.enableKeyboard();
+                        break;
                 }
             });
         });
@@ -231,6 +252,8 @@ public class ClientFx extends Application {
                 multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
             });
             singlePlayerButton.setOnAction(e->{
+                isSinglePlayer = true;
+                chosenNumPlayers = 1;
                 twoPlayerButton.setDisable(true); twoPlayerButton.setOpacity(.5);
                 threePlayerButton.setDisable(true); threePlayerButton.setOpacity(.5);
                 fourPlayerButton.setDisable(true); fourPlayerButton.setOpacity(.5);
@@ -247,6 +270,8 @@ public class ClientFx extends Application {
                 singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
             });
             multiPlayerButton.setOnAction(e->{
+                isSinglePlayer = false;
+                chosenNumPlayers = 0;
                 twoPlayerButton.setDisable(false); twoPlayerButton.setOpacity(1);
                 threePlayerButton.setDisable(false); threePlayerButton.setOpacity(1);
                 fourPlayerButton.setDisable(false); fourPlayerButton.setOpacity(1);
@@ -316,7 +341,7 @@ public class ClientFx extends Application {
                 easyButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
                 hardButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
             });
-            hardButton = new Button("Hard");
+            hardButton = new Button("hard");
             hardButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
             hardButton.setPrefSize(90, 20);
             hardButton.setTextFill(Color.INDIGO);
@@ -397,7 +422,7 @@ public class ClientFx extends Application {
         private HBox row3;
 
         private HBox wordDisplay;
-
+        private ArrayList<Label> wordDisplayList;
         private VBox bottomBox;
 
         private VBox enterBox;
@@ -427,16 +452,30 @@ public class ClientFx extends Application {
 
         public void initWordDisplay(){
             this.wordDisplay = new HBox(10);
+            this.wordDisplayList = new ArrayList<>();
             for(int i = 0; i < word.length(); i++){
-                Label character = new Label(word.charAt(i)+ "");
+                Label character = new Label("_");
                 character.setTextFill(Color.MIDNIGHTBLUE);
                 character.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 33));
                 character.setAlignment(Pos.CENTER);
                 character.setPrefSize(40, 40);
                 character.setBackground(new Background(new BackgroundFill(Color.LEMONCHIFFON, new CornerRadii(5), Insets.EMPTY)));
-                this.wordDisplay.getChildren().add(character);
+                wordDisplayList.add(character);
+                this.wordDisplay.getChildren().add(wordDisplayList.get(i));
             }
             this.wordDisplay.setAlignment(Pos.CENTER);
+        }
+
+        public void updateWordDisplay(){
+            initWordDisplay();
+            for(int i = 0; i < word.length(); i++){
+                if(lettersPlayed.contains(word.charAt(i)+"")){
+                    wordDisplayList.get(i).setText(word.charAt(i)+"");
+                }
+            }
+            this.bottomBox = new VBox(10, this.wordDisplay, this.bottomDisplay);
+            bottomBox.setAlignment(Pos.CENTER);
+            gamePane.setBottom(bottomBox);
         }
 
         public void initSpaceshipImages(){
@@ -448,7 +487,20 @@ public class ClientFx extends Application {
                 Image spaceShipImage = new Image("spaceship" + (i+1) + ".png");
                 this.ssImageList.add(spaceShipImage);
             }
-            ImageView iv = new ImageView(ssImageList.get(numLives-5));
+            ImageView iv = new ImageView(ssImageList.get((5-numLives)+1));
+            iv.setFitWidth(350);
+            iv.setFitHeight(350);
+            this.spaceship.setGraphic(iv);
+            gamePane.setCenter(this.spaceship);
+        }
+
+        public void updateSpaceShipImage(){
+            int i = 1;
+            if(numLives < 5){
+                i = (5-numLives)+1;
+            }
+
+            ImageView iv = new ImageView(ssImageList.get(i));
             iv.setFitWidth(350);
             iv.setFitHeight(350);
             this.spaceship.setGraphic(iv);
@@ -533,9 +585,22 @@ public class ClientFx extends Application {
         EventHandler<ActionEvent> sendLetter = event -> {
             pressed.setDisable(true);
             if (!(letter.isBlank())) {
-                client.send(letter);
+                client.send("LETTER: " + letter);
                 lettersPlayed.add(letter);
                 submitButton.setDisable(true); /*disable until its that players turn*/
+                updateWordDisplay();
+                boolean eval = false;
+                for(int i = 0; i < word.length(); i++){
+                    if(word.charAt(i) == letter.charAt(0)){
+                        eval = true;
+                    }
+                }
+                if(!eval){
+                    numLives--;
+                    updateSpaceShipImage();
+                }
+                disableKeyboard();
+                letter = "";
             }
         };
 

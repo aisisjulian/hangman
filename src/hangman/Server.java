@@ -191,16 +191,23 @@ public class Server {
                    Serializable data = (Serializable) in.readObject();
                    System.out.println(data.toString());
 
-                   if(data.toString().split(" ")[0].equals("NUM-PLAYERS: ")){
+                   if(data.toString().split(" ")[0].equals("NUM-PLAYERS:")){
                        this.numPlayersChosen = Integer.valueOf(data.toString().split(" ")[1]);
                    }
-                   if(data.toString().split(" ")[0].equals("DIFFICULTY: ")){
+                   if(data.toString().split(" ")[0].equals("DIFFICULTY:")){
                        this.difficultyChosen = data.toString().split(" ")[1];
-                       if(this.numPlayersChosen != 0 && !difficultyChosen.equals("")){
+                       if(this.numPlayersChosen == 1 && !difficultyChosen.equals("")){
+                           this.game = new Game(this);
+                           gamesList.add(this.game);
+                       }
+                       else if(this.numPlayersChosen != 0 && !difficultyChosen.equals("")){
                            this.game = findGame();
                        }
                    }
-
+                   if(data.toString().split(" ")[0].equals("LETTER:")){
+                       String letter = data.toString().split(" ")[1];
+                       game.evaluateGuess(letter);
+                   }
 
 
                }
@@ -214,15 +221,18 @@ public class Server {
         }
 
         public Game findGame(){
+            Game g;
             for(int i = 0; i < gamesList.size(); i++){
-                Game g = gamesList.get(i);
+                g = gamesList.get(i);
                 if(!g.isActive && g.numPlayers == this.numPlayersChosen && g.difficulty.equals(this.difficultyChosen)){
                     g.addPlayer(this);
                     return g;
                 }
             }
             send("WAIT-FOR-PLAYERS", clientIndex);
-            return new Game(this);
+            g = new Game(this);
+            gamesList.add(g);
+            return g;
         }
 
     }
@@ -237,7 +247,7 @@ public class Server {
     // ******************************************************************* //
     class Game{
         private int numPlayers = 1;
-        private int numPlayersConnected;
+        private int numPlayersConnected = 0;
         private String difficulty = "easy";
         private ArrayList<ClientThread> players;
         private boolean isActive;
@@ -254,6 +264,10 @@ public class Server {
             numPlayersConnected++;
             numPlayers = player.numPlayersChosen;
             difficulty = player.difficultyChosen;
+            if(numPlayersConnected == numPlayers){ isActive = true; startGame();} //can change total num players in game HERE
+            else{
+                send("WAIT-FOR-PLAYERS", player.clientIndex);
+            }
         }
 
         void addPlayer(ClientThread player){
@@ -368,6 +382,19 @@ public class Server {
 
             }
 
+            for(int i = 0; i < players.size(); i++){
+                if(i != currentlyGuessing) {
+                    send("LETTER: " + letter, players.get(i).clientIndex);
+                }
+            }
+            if(currentlyGuessing < numPlayers-1){
+                currentlyGuessing++;
+            }
+            else {
+                currentlyGuessing = 0;
+            }
+
+            send("WAITING-FOR-GUESS", players.get(currentlyGuessing).clientIndex);
 
             //if wrong guess, update lives, check for loss
 
