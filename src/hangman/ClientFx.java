@@ -33,7 +33,7 @@ public class ClientFx extends Application {
     private Thread t;
     private boolean started = false;
     private boolean isSinglePlayer = false;
-    private boolean alreadyplayed = false;
+    private boolean alreadyPlayed = false;
 
     private int numLives = 5;
     private String word = "welcome";
@@ -312,7 +312,7 @@ public class ClientFx extends Application {
     }
 
     class GameScene{
-       // private Button A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z;
+        // private Button A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z;
         private Scene scene;
         private Image gameBackgroundImage;
         private Background gameBackground;
@@ -332,7 +332,7 @@ public class ClientFx extends Application {
         private Label letterChosenLabel;
         private String letter;
         private Button pressed;
-        private Button sumbitButton;
+        private Button submitButton;
 
         private Label spaceship;
         private ArrayList<Image> ssImageList;
@@ -417,7 +417,7 @@ public class ClientFx extends Application {
             //keyboardBox.setBackground(new Background(new BackgroundFill(new Color(0x19/255.0, 0x19/255.0, 0x70/255.0, .7), new CornerRadii(0), Insets.EMPTY)));
 //            gamePane.setBottom(keyboardBox);
 
-            /*dispaly letter entered code*/
+            /*display letter entered code*/
             bottomDisplay = new HBox();
             bottomDisplay.setBackground(new Background(new BackgroundFill(new Color(0x19/255.0, 0x19/255.0, 0x70/255.0, .7), new CornerRadii(0), Insets.EMPTY)));
             this.enterBox = new VBox(10);
@@ -426,11 +426,11 @@ public class ClientFx extends Application {
             letterChosenLabel.setAlignment(Pos.BASELINE_LEFT);
             letterChosenLabel.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 42));
 
-            sumbitButton = new Button("submit");
-            sumbitButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 12));
-            sumbitButton.setAlignment(Pos.CENTER);
-            sumbitButton.setOnAction(sendLetter);
-            enterBox.getChildren().addAll(letterChosenLabel, sumbitButton);
+            submitButton = new Button("submit");
+            submitButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 12));
+            submitButton.setAlignment(Pos.CENTER);
+            submitButton.setOnAction(sendLetter);
+            enterBox.getChildren().addAll(letterChosenLabel, submitButton);
             enterBox.setPrefSize(120, 150);
             enterBox.setPadding(new Insets(0, 0,0, 0));
 
@@ -441,12 +441,29 @@ public class ClientFx extends Application {
 
         }
 
+        void enableKeyboard(){
+            for(int i = 0; i < keyboard.size(); i++) {
+                if(lettersPlayed.contains(keyboard.get(i).getText())){
+                    keyboard.get(i).setDisable(true);
+                }
+                else{
+                    keyboard.get(i).setDisable(false);
+                }
+            }
+        }
+
+        void disableKeyboard(){
+            for(int i = 0; i < keyboard.size(); i++) {
+                keyboard.get(i).setDisable(true);
+            }
+        }
+
         EventHandler<ActionEvent> sendLetter = event -> {
             pressed.setDisable(true);
             if (!(letter.isBlank())) {
                 client.send(letter);
                 lettersPlayed.add(letter);
-                sumbitButton.setDisable(true); /*disable until its that players turn*/
+                submitButton.setDisable(true); /*disable until its that players turn*/
             }
         };
 
@@ -456,9 +473,9 @@ public class ClientFx extends Application {
             letter = pressed.getText();
             letterChosenLabel.setText(letter);
             for (int j = 0; j < lettersPlayed.size(); j++){
-                if (lettersPlayed.get(j).equals(letter)){ alreadyplayed = true; }
+                if (lettersPlayed.get(j).equals(letter)){ alreadyPlayed = true; }
             }
-            if (!alreadyplayed){ sumbitButton.setDisable(false); }
+            if (!alreadyPlayed){ submitButton.setDisable(false); }
         };
     }
 
