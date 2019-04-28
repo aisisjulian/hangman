@@ -49,6 +49,10 @@ public class ClientFx extends Application {
     private VBox optionsBox;
     final String HOVERED_BUTTON_STYLE = "-fx-background-color: deeppink,  -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;";
 
+    public static void main(String[] args) {
+        launch(args);
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception{
         primaryStage.setTitle("Welcome to Spaceman :-)");
@@ -110,10 +114,6 @@ public class ClientFx extends Application {
 
 
         primaryStage.show();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 
     private Client createClient(String IP, int portIn, Stage primaryStage) {
@@ -597,6 +597,7 @@ public class ClientFx extends Application {
                 }
                 if(!eval){
                     numLives--;
+                    // send
                     updateSpaceShipImage();
                 }
                 disableKeyboard();
@@ -634,7 +635,6 @@ public class ClientFx extends Application {
 
             scene = new Scene(endPane, 500, 500);
         }
-
 
     }
 

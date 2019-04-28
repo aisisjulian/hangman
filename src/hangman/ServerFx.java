@@ -37,7 +37,6 @@ public class ServerFx extends Application {
         serverScene = new serverDisplay();
         primaryStage.setScene(serverScene.scene);
         primaryStage.show();
-
     }
 
 
@@ -116,7 +115,6 @@ public class ServerFx extends Application {
             serverPane.setTop(headerBox);
 
             scene = new Scene(serverPane, 500, 400);
-
 
         }
 
@@ -209,4 +207,3 @@ public class ServerFx extends Application {
 
     }
 }
-

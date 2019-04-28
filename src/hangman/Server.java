@@ -1,6 +1,7 @@
 package hangman;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
@@ -12,7 +13,7 @@ import java.util.function.Consumer;
 
 // ******************************************************************* //
 //                                                                     //
-//                              Sever Class                            //
+//                              Server Class                            //
 //                                                                     //
 // ******************************************************************* //
 
@@ -209,14 +210,12 @@ public class Server {
                        game.evaluateGuess(letter);
                    }
 
-
                }
            }
            catch(Exception e){
                callback.accept("NO-CONNECTION");
 
            }
-
 
         }
 
@@ -254,6 +253,7 @@ public class Server {
         private int currentlyGuessing; //index of player of whose turn it is
         private ArrayList<Boolean> lettersGuessed; //can change to array of characters?
         private String word;
+        private ArrayList<Character> lettersInWord;
         private ArrayList<Boolean> lettersGuessedInWord; //each index represents a character of the string
         private int lives = 5; //subject to change
 
@@ -283,7 +283,7 @@ public class Server {
             if(isActive){
                 //*****************************************//
                 lettersGuessed = new ArrayList<>(); //index represents letter
-                for(int i = 0; i < 26; i++){ lettersGuessed.add(false); }
+                for(int i = 0; i < 26; i++){ this.lettersGuessed.add(false); }
 
                 //    INSERT CODE THAT PICKS RANDOM WORD   //
 
@@ -302,6 +302,8 @@ public class Server {
                     word = hardDictionary.get(w);
                 }
 
+                removeDup();
+
                 for(int i = 0; i < players.size(); i++){
                     send("WORD: " + word, players.get(i).clientIndex);
                     send("START", players.get(i).clientIndex);
@@ -316,7 +318,6 @@ public class Server {
         }
 
 
-
         void resetGame(){
             players.clear();
             numPlayersConnected = 0;
@@ -329,54 +330,79 @@ public class Server {
             switch (letter) {
                 case "A":
                     lettersGuessed.set(0, true);
+                    break;
                 case "B":
                     lettersGuessed.set(1, true);
+                    break;
                 case "C":
                     lettersGuessed.set(2, true);
+                    break;
                 case "D":
                     lettersGuessed.set(3, true);
+                    break;
                 case "E":
                     lettersGuessed.set(4, true);
+                    break;
                 case "F":
                     lettersGuessed.set(5, true);
+                    break;
                 case "G":
                     lettersGuessed.set(6, true);
+                    break;
                 case "H":
                     lettersGuessed.set(7, true);
+                    break;
                 case "I":
                     lettersGuessed.set(8, true);
+                    break;
                 case "J":
                     lettersGuessed.set(9, true);
+                    break;
                 case "K":
                     lettersGuessed.set(10, true);
+                    break;
                 case "L":
                     lettersGuessed.set(11, true);
+                    break;
                 case "M":
                     lettersGuessed.set(12, true);
+                    break;
                 case "N":
                     lettersGuessed.set(13, true);
+                    break;
                 case "O":
                     lettersGuessed.set(14, true);
+                    break;
                 case "P":
                     lettersGuessed.set(15, true);
+                    break;
                 case "Q":
                     lettersGuessed.set(16, true);
+                    break;
                 case "R":
                     lettersGuessed.set(17, true);
+                    break;
                 case "S":
                     lettersGuessed.set(18, true);
+                    break;
                 case "T":
                     lettersGuessed.set(19, true);
+                    break;
                 case "U":
                     lettersGuessed.set(20, true);
+                    break;
                 case "V":
                     lettersGuessed.set(21, true);
+                    break;
                 case "W":
                     lettersGuessed.set(22, true);
+                    break;
                 case "X":
                     lettersGuessed.set(23, true);
+                    break;
                 case "Y":
                     lettersGuessed.set(24, true);
+                    break;
                 case "Z":
                     lettersGuessed.set(25, true);
 
@@ -397,18 +423,51 @@ public class Server {
             send("WAITING-FOR-GUESS", players.get(currentlyGuessing).clientIndex);
 
             //if wrong guess, update lives, check for loss
-
             //if right guess, update lettersGuessInWord, check for win
+
+            if (lettersInWord.contains(letter)){
+                this.lettersInWord.remove(letter);
+                checkForWin();
+            }
+            else{
+                lives--;
+                checkForLoss();
+            }
 
             //move onto next player
         }
 
         boolean checkForWin(){
-
+           /* for (int i = 0; i < word.length(); i++){
+                int index = word.charAt(i) - 65;
+                if (lettersGuessed.get(index) == false){
+                    return false;
+                }
+            }*/
+           if (lettersInWord.size() == 0 ){
+               System.out.println("Win");
+               return true;
+           }
             return false;
         }
 
+        void removeDup(){
+            this.lettersInWord = new ArrayList<>();
+            int len = word.length();
+            for (int i = 0; i < len; i++) {
+                char c = word.charAt(i);
+                if (!lettersInWord.contains(c)){
+                    this.lettersInWord.add(c);
+                }
+            }
+        }
+
+
         boolean checkForLoss(){
+            if (lives < 0){
+                System.out.println("Lost");
+                return true;
+            }
             return false;
         }
 
@@ -421,6 +480,3 @@ public class Server {
 }
 // ************************** End Server Class *********************** //
 // ******************************************************************* //
-
-
-
