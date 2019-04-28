@@ -25,7 +25,7 @@ public abstract class ClientConnection {
             this.out.writeObject(data);
         }
         catch(Exception e){
-            System.out.println("Exception in send()");
+            System.out.println("Exception in send() Data -> " + data);
         }
 
     }
@@ -46,11 +46,8 @@ public abstract class ClientConnection {
             this.socketClient = s;
             socketClient.setTcpNoDelay(true);
             System.out.println("CONNECTED TO SERVER");
-            send("Client connected");
             this.out = out;
-
             send("Client connected");
-
             while (isConnected) {
                 Serializable data = (Serializable) in.readObject();
                 callback.accept(data);
