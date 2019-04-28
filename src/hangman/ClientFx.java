@@ -36,12 +36,15 @@ public class ClientFx extends Application {
     private boolean alreadyPlayed = false;
 
     private int numLives = 5;
+    private String chosenDifficulty = "";
+    private int chosenNumPlayers = 0;
     private String word = "welcome";
-    private Scene startScene, gameScene, endScene;
+    private Scene startScene, waitScene, gameScene, endScene;
     private StartScene ss = new StartScene();
+    private waitScene ws = new waitScene();
     private GameScene gs = new GameScene();
     private EndScene es = new EndScene();
-    private BorderPane startPane, gamePane, endPane;
+    private BorderPane startPane, waitPane, gamePane, endPane;
     private VBox connectionBox;
     private VBox optionsBox;
     final String HOVERED_BUTTON_STYLE = "-fx-background-color: deeppink,  -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;";
@@ -51,6 +54,7 @@ public class ClientFx extends Application {
         primaryStage.setTitle("Welcome to Spaceman :-)");
         startScene = ss.scene;
         gameScene = gs.scene;
+        waitScene = ws.scene;
         primaryStage.setScene(this.startScene);
 
 
@@ -80,7 +84,13 @@ public class ClientFx extends Application {
         });
 
         ss.startButton.setOnAction(event->{
-            primaryStage.setScene(gameScene);
+            if(!chosenDifficulty.equals("") && chosenNumPlayers != 0){
+                client.send("NUM-PLAYERS: " + chosenNumPlayers);
+                client.send("DIFFICULTY: " + chosenDifficulty);
+            }
+            primaryStage.setScene(waitScene);
+
+            //primaryStage.setScene(gameScene);
             ss.startButton.setDisable(true);
         });
 
@@ -164,7 +174,7 @@ public class ClientFx extends Application {
         private Button singlePlayerButton, multiPlayerButton, twoPlayerButton, threePlayerButton, fourPlayerButton, easyButton, mediumButton, hardButton;
         private Button connectButton, startButton;
         private TextArea ipInput, portInput;
-        private Label header, ipLabel, portLabel, numPlayersLabel;
+        private Label header, ipLabel, portLabel;
 
         public StartScene(){
             startPane = new BorderPane();
@@ -215,11 +225,15 @@ public class ClientFx extends Application {
             singlePlayerButton.setTextFill(Color.INDIGO);
             singlePlayerButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
             singlePlayerButton.setOnMouseClicked(e -> {
+                isSinglePlayer = true;
+                chosenNumPlayers = 1;
                 singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
                 multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
             });
             singlePlayerButton.setOnAction(e->{
-                twoPlayerButton.setDisable(true); threePlayerButton.setDisable(true); fourPlayerButton.setDisable(true);
+                twoPlayerButton.setDisable(true); twoPlayerButton.setOpacity(.5);
+                threePlayerButton.setDisable(true); threePlayerButton.setOpacity(.5);
+                fourPlayerButton.setDisable(true); fourPlayerButton.setOpacity(.5);
             } );
 
             multiPlayerButton = new Button("Multi-Player");
@@ -228,12 +242,14 @@ public class ClientFx extends Application {
             multiPlayerButton.setTextFill(Color.INDIGO);
             multiPlayerButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
             multiPlayerButton.setOnMouseClicked(e -> {
+                isSinglePlayer = false;
                 multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
                 singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
             });
             multiPlayerButton.setOnAction(e->{
-                isSinglePlayer=false;
-                twoPlayerButton.setDisable(false); threePlayerButton.setDisable(false); fourPlayerButton.setDisable(false);
+                twoPlayerButton.setDisable(false); twoPlayerButton.setOpacity(1);
+                threePlayerButton.setDisable(false); threePlayerButton.setOpacity(1);
+                fourPlayerButton.setDisable(false); fourPlayerButton.setOpacity(1);
             });
 
             HBox playerMode = new HBox(10, singlePlayerButton, multiPlayerButton);
@@ -244,18 +260,36 @@ public class ClientFx extends Application {
             twoPlayerButton.setPrefSize(75, 25);
             twoPlayerButton.setTextFill(Color.INDIGO);
             twoPlayerButton.setFont(Font.font("verdana", FontWeight.BOLD, 11));
+            twoPlayerButton.setOnAction(e->{
+                chosenNumPlayers = 2;
+                twoPlayerButton.setOpacity(.5);
+                threePlayerButton.setOpacity(1);
+                fourPlayerButton.setOpacity(1);
+            });
 
             threePlayerButton = new Button( "3-Players");
             threePlayerButton.setBackground(new Background(new BackgroundFill(Color.LAVENDERBLUSH, new CornerRadii(20), Insets.EMPTY)));
             threePlayerButton.setPrefSize(75, 25);
             threePlayerButton.setTextFill(Color.INDIGO);
             threePlayerButton.setFont(Font.font("verdana", FontWeight.BOLD, 11));
+            threePlayerButton.setOnAction(e->{
+                chosenNumPlayers = 3;
+                twoPlayerButton.setOpacity(1);
+                threePlayerButton.setOpacity(.5);
+                fourPlayerButton.setOpacity(1);
+            });
 
             fourPlayerButton = new Button("4-Players");
             fourPlayerButton.setBackground(new Background(new BackgroundFill(Color.LAVENDERBLUSH, new CornerRadii(20), Insets.EMPTY)));
             fourPlayerButton.setPrefSize(75, 25);
             fourPlayerButton.setTextFill(Color.INDIGO);
             fourPlayerButton.setFont(Font.font("verdana", FontWeight.BOLD, 11));
+            fourPlayerButton.setOnAction(e->{
+                chosenNumPlayers = 4;
+                twoPlayerButton.setOpacity(1);
+                threePlayerButton.setOpacity(1);
+                fourPlayerButton.setOpacity(.5);
+            });
 
             HBox difficultyBox;
             easyButton = new Button("Easy");
@@ -264,7 +298,8 @@ public class ClientFx extends Application {
             easyButton.setTextFill(Color.INDIGO);
             easyButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 14));
             easyButton.setOnMouseClicked(e -> {
-                client.send("DIFFICULTY: easy");
+                chosenDifficulty = "easy";
+                //client.send("DIFFICULTY: easy");
                 easyButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
                 mediumButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
                 hardButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
@@ -275,7 +310,8 @@ public class ClientFx extends Application {
             mediumButton.setTextFill(Color.INDIGO);
             mediumButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 14));
             mediumButton.setOnMouseClicked(e -> {
-                client.send("DIFFICULTY: medium");
+                chosenDifficulty = "medium";
+                //client.send("DIFFICULTY: medium");
                 mediumButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
                 easyButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
                 hardButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
@@ -286,7 +322,8 @@ public class ClientFx extends Application {
             hardButton.setTextFill(Color.INDIGO);
             hardButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 14));
             hardButton.setOnMouseClicked(e -> {
-                client.send("DIFFICULTY: hard");
+                chosenDifficulty = "hard";
+                //client.send("DIFFICULTY: hard");
                 hardButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
                 mediumButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
                 easyButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
@@ -310,6 +347,41 @@ public class ClientFx extends Application {
             scene = new Scene(startPane, 500, 500);
         }
     }
+
+    class waitScene{
+        private Scene scene;
+        private Image waitBackgroundImage;
+        private Background waitBackground;
+        private Label waitMessage;
+        private Label alienPic;
+
+        public waitScene(){
+            waitPane = new BorderPane();
+            waitBackgroundImage  = new Image("startScene.png");
+            waitBackground = new Background(new BackgroundFill(new ImagePattern(waitBackgroundImage), CornerRadii.EMPTY, Insets.EMPTY));
+            waitPane.setBackground(waitBackground);
+
+            waitMessage = new Label ("* Waiting for Players to Join *");
+            waitMessage.setPrefSize(500, 80);
+            waitMessage.setBackground(new Background(new BackgroundFill(new Color(0x19/255.0, 0x19/255.0, 0x70/255.0, .7), new CornerRadii(0), Insets.EMPTY)));
+            waitMessage.setTextFill(Color.LAVENDERBLUSH);
+            waitMessage.setFont(Font.font("serif", FontWeight.EXTRA_LIGHT, 22));
+            waitMessage.setAlignment(Pos.CENTER);
+            waitPane.setBottom(waitMessage);
+            alienPic = new Label();
+            Image p = new Image("spaceship7.png");
+            ImageView iv = new ImageView(p);
+            iv.setFitHeight(350);
+            iv.setFitWidth(400);
+            alienPic.setGraphic(iv);
+            alienPic.setAlignment(Pos.BOTTOM_CENTER);
+            alienPic.setPrefSize(400,350);
+            waitPane.setCenter(alienPic);
+            scene = new Scene(waitPane, 500, 500);
+        }
+    }
+
+
 
     class GameScene{
         // private Button A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z;
