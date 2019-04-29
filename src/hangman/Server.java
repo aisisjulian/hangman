@@ -438,12 +438,6 @@ public class Server {
         }
 
         boolean checkForWin(){
-           /* for (int i = 0; i < word.length(); i++){
-                int index = word.charAt(i) - 65;
-                if (lettersGuessed.get(index) == false){
-                    return false;
-                }
-            }*/
            if (lettersInWord.size() == 0 ){
                System.out.println("Win");
                return true;
@@ -465,7 +459,9 @@ public class Server {
 
         boolean checkForLoss(){
             if (lives < 0){
-                System.out.println("Lost");
+                for(int i = 0; i < players.size(); i++){
+                    send("GAMEOVER", players.get(i).clientIndex);
+                }
                 return true;
             }
             return false;
@@ -474,8 +470,6 @@ public class Server {
     }
     // ***************************** End Game Class ********************** //
     // ******************************************************************* //
-
-
 
 }
 // ************************** End Server Class *********************** //

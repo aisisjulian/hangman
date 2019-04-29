@@ -188,6 +188,9 @@ public class ClientFx extends Application {
                     case "WAITING-FOR-GUESS":
                         gs.enableKeyboard();
                         break;
+                    case "GAMEOVER":
+                        primaryStage.setScene(endScene);
+                        break;
                 }
             });
         });
@@ -594,7 +597,7 @@ public class ClientFx extends Application {
 
         void disableKeyboard(){
             for(int i = 0; i < keyboard.size(); i++) {
-                keyboard.get(i).setDisable(true);
+                this.keyboard.get(i).setDisable(true);
             }
         }
 
@@ -614,7 +617,6 @@ public class ClientFx extends Application {
                     }
                     if(!eval){
                         numLives--;
-                        // send
                         updateSpaceShipImage();
                     }
                     disableKeyboard();
@@ -679,6 +681,7 @@ public class ClientFx extends Application {
             quitBtn.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
 
             quitBtn.setOnAction(actionEvent -> {
+                try {client.closeConn();} catch(Exception e){}
                 System.out.println("Quit game");
             });
 
