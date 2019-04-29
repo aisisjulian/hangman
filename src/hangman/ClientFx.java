@@ -569,9 +569,7 @@ public class ClientFx extends Application {
             submitButton = new Button("submit");
             submitButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 12));
             submitButton.setAlignment(Pos.CENTER);
-            //if (numLives != 0){
             submitButton.setOnAction(sendLetter);
-            //}
 
             enterBox.getChildren().addAll(letterChosenLabel, submitButton);
             enterBox.setPrefSize(120, 150);
@@ -603,30 +601,26 @@ public class ClientFx extends Application {
 
         EventHandler<ActionEvent> sendLetter = event -> {
             pressed.setDisable(true);
-            //if (numLives != 0){
-                if (!(letter.isBlank())) {
-                    client.send("LETTER: " + letter);
-                    lettersPlayed.add(letter);
-                    submitButton.setDisable(true); /*disable until its that players turn*/
-                    updateWordDisplay();
-                    boolean eval = false;
-                    for(int i = 0; i < word.length(); i++){
-                        if(word.charAt(i) == letter.charAt(0)){
-                            eval = true;
-                        }
-                    }
-                    if(!eval){
-                        numLives--;
-                        updateSpaceShipImage();
-                    }
-                    disableKeyboard();
-                    letter = "";
-                }
-            //}
-            //else{
-            //    System.out.println("GAME OVER");
 
-            //}
+            if (!(letter.isBlank())) {
+                client.send("LETTER: " + letter);
+                lettersPlayed.add(letter);
+                submitButton.setDisable(true); /*disable until its that players turn*/
+                updateWordDisplay();
+                boolean eval = false;
+                for(int i = 0; i < word.length(); i++){
+                    if(word.charAt(i) == letter.charAt(0)){
+                        eval = true;
+                    }
+                }
+                if(!eval){
+                    numLives--;
+                    updateSpaceShipImage();
+                }
+                disableKeyboard();
+                letter = "";
+            }
+
 
         };
 
@@ -663,7 +657,6 @@ public class ClientFx extends Application {
             endTitle.setTextFill(Color.WHITE);
             endTitle.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 50));
             endTitle.setAlignment(Pos.CENTER);
-            //endPane.setTop(endTitle);
 
             // display letters guessed
             for (int i = 0; i < lettersPlayed.size(); i++){
@@ -681,7 +674,15 @@ public class ClientFx extends Application {
             quitBtn.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
 
             quitBtn.setOnAction(actionEvent -> {
-                try {client.closeConn();} catch(Exception e){}
+                try {
+                    client.closeConn();
+                    Stage stage = (Stage) quitBtn.getScene().getWindow();
+                    // do what you have to do
+                    stage.close();
+                }
+                catch(Exception e){
+
+                }
                 System.out.println("Quit game");
             });
 
