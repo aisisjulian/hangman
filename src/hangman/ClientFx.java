@@ -134,9 +134,7 @@ public class ClientFx extends Application {
                 if(data.toString().split(" ")[0].equals("LETTER:")){
                     String l = data.toString().split(" ")[1];
                     lettersPlayed.add(l);
-                    if (numLives != 0){
-                        gs.updateWordDisplay();
-                    }
+                    gs.updateWordDisplay();
                     if (numLives == 0){
                         this.es = new EndScene();
                         this.endScene = es.scene;
@@ -568,12 +566,10 @@ public class ClientFx extends Application {
             submitButton = new Button("submit");
             submitButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 12));
             submitButton.setAlignment(Pos.CENTER);
-            if (numLives != 0){
-                submitButton.setOnAction(sendLetter);
-            }
-            else{
+            //if (numLives != 0){
+            submitButton.setOnAction(sendLetter);
+            //}
 
-            }
             enterBox.getChildren().addAll(letterChosenLabel, submitButton);
             enterBox.setPrefSize(120, 150);
             enterBox.setPadding(new Insets(0, 0,0, 0));
@@ -604,7 +600,7 @@ public class ClientFx extends Application {
 
         EventHandler<ActionEvent> sendLetter = event -> {
             pressed.setDisable(true);
-            if (numLives != 0){
+            //if (numLives != 0){
                 if (!(letter.isBlank())) {
                     client.send("LETTER: " + letter);
                     lettersPlayed.add(letter);
@@ -624,11 +620,11 @@ public class ClientFx extends Application {
                     disableKeyboard();
                     letter = "";
                 }
-            }
-            else{
-                System.out.println("GAME OVER");
+            //}
+            //else{
+            //    System.out.println("GAME OVER");
 
-            }
+            //}
 
         };
 
