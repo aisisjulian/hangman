@@ -185,14 +185,7 @@ public class ClientFx extends Application {
                         gs.enableKeyboard();
                         break;
                     case "GAMEOVER":
-                        this.es = new EndScene();
-                        this.es.playAgainBtn.setOnAction(event->{
-                            System.out.println("play again");
-                            primaryStage.setScene(startScene);
-                            this.ss.startButton.setDisable(false);
-                            this.ss.singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
-                            this.ss.multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
-                        });
+                        this.es = new EndScene(primaryStage);
                         this.endScene = es.scene;
                         primaryStage.setScene(endScene);
                         break;
@@ -652,7 +645,7 @@ public class ClientFx extends Application {
         private VBox endBox;
         private HBox cword;
 
-        public EndScene(){
+        public EndScene(Stage primaryStage){
             endPane = new BorderPane();
             endBackgroundImage = new Image("endScene.png");
             endBackground = new Background(new BackgroundFill(new ImagePattern(endBackgroundImage), CornerRadii.EMPTY, Insets.EMPTY));
@@ -712,6 +705,13 @@ public class ClientFx extends Application {
             playAgainBtn.setPrefSize(130, 40);
             playAgainBtn.setTextFill(Color.INDIGO);
             playAgainBtn.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
+            playAgainBtn.setOnAction(event->{
+                System.out.println("play again");
+                primaryStage.setScene(startScene);
+                ss.startButton.setDisable(false);
+                ss.singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+                ss.multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+            });
 
 
             buttonBox = new HBox(10, quitBtn, playAgainBtn);
