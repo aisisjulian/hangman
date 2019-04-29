@@ -43,7 +43,7 @@ public class ClientFx extends Application {
     private StartScene ss = new StartScene();
     private waitScene ws = new waitScene();
     private GameScene gs = new GameScene();
-    private EndScene es;// = new EndScene();
+    private EndScene es;
     private BorderPane startPane, waitPane, gamePane, endPane;
     private VBox connectionBox;
     private VBox optionsBox;
@@ -131,9 +131,8 @@ public class ClientFx extends Application {
                     lettersPlayed.add(l);
                     gs.updateWordDisplay();
                     if (numLives == 0){
-                        this.es = new EndScene();
                         this.endScene = es.scene;
-                        primaryStage.setScene(endScene);
+                        primaryStage.setScene(this.endScene);
                     }
                   //  else {
                         boolean eval = false;
@@ -187,6 +186,12 @@ public class ClientFx extends Application {
                         break;
                     case "GAMEOVER":
                         this.es = new EndScene();
+                        this.es.playAgainBtn.setOnAction(event->{
+                            System.out.println("play again");
+                            primaryStage.setScene(startScene);
+                            this.ss.startButton.setDisable(false);
+                            
+                        });
                         this.endScene = es.scene;
                         primaryStage.setScene(endScene);
                         break;
@@ -707,9 +712,6 @@ public class ClientFx extends Application {
             playAgainBtn.setTextFill(Color.INDIGO);
             playAgainBtn.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
 
-            playAgainBtn.setOnAction(actionEvent -> {
-                System.out.println("Play Again");
-            });
 
             buttonBox = new HBox(10, quitBtn, playAgainBtn);
             buttonBox.setAlignment(Pos.CENTER);
