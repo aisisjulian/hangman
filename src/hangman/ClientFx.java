@@ -43,7 +43,7 @@ public class ClientFx extends Application {
     private StartScene ss = new StartScene();
     private waitScene ws = new waitScene();
     private GameScene gs = new GameScene();
-    private EndScene es = new EndScene();
+    private EndScene es;// = new EndScene();
     private BorderPane startPane, waitPane, gamePane, endPane;
     private VBox connectionBox;
     private VBox optionsBox;
@@ -59,7 +59,7 @@ public class ClientFx extends Application {
         startScene = ss.scene;
         gameScene = gs.scene;
         waitScene = ws.scene;
-        endScene = es.scene;
+        //endScene = es.scene;
         primaryStage.setScene(this.startScene);
 
 
@@ -123,6 +123,7 @@ public class ClientFx extends Application {
 
                 if(data.toString().split(" ")[0].equals("WORD:")){
                     this.word = data.toString().split(" ")[1];
+                    System.out.println(word);
                     this.gs = new GameScene();
                     this.gameScene = gs.scene;
                     primaryStage.setScene(this.gameScene);
@@ -189,6 +190,8 @@ public class ClientFx extends Application {
                         gs.enableKeyboard();
                         break;
                     case "GAMEOVER":
+                        this.es = new EndScene();
+                        this.endScene = es.scene;
                         primaryStage.setScene(endScene);
                         break;
                 }
@@ -424,7 +427,6 @@ public class ClientFx extends Application {
 
 
     class GameScene{
-        // private Button A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z;
         private Scene scene;
         private Image gameBackgroundImage;
         private Background gameBackground;
@@ -650,6 +652,7 @@ public class ClientFx extends Application {
         private Button quitBtn, playAgainBtn;
         private HBox buttonBox;
         private VBox endBox;
+        private HBox cword;
 
         public EndScene(){
             endPane = new BorderPane();
@@ -669,6 +672,20 @@ public class ClientFx extends Application {
             for (int i = 0; i < lettersPlayed.size(); i++){
                 System.out.print(lettersPlayed.get(i));
             }
+
+            cword = new HBox(3);
+            System.out.println("word for end: " + word);
+            for (int i = 0; i < word.length(); i++){
+                Label letter = new Label(word.charAt(i) + "");
+                if (lettersPlayed.contains(word.charAt(i) + "")){
+                    letter.setTextFill(Color.GOLD);
+                }
+                else { letter.setTextFill(Color.RED); }
+                letter.setAlignment(Pos.BASELINE_LEFT);
+                letter.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 42));
+                cword.getChildren().add(letter);
+            }
+
 
             // display the final word
             // display win or lose
@@ -702,6 +719,9 @@ public class ClientFx extends Application {
             //endPane.setCenter(buttonBox);
             endBox = new VBox(30, endTitle, buttonBox);
             endPane.setCenter(endBox);
+
+            endPane.setBottom(cword);
+            cword.setAlignment(Pos.TOP_CENTER);
 
             scene = new Scene(endPane, 500, 500);
         }

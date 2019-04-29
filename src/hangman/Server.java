@@ -425,11 +425,14 @@ public class Server {
             //if wrong guess, update lives, check for loss
             //if right guess, update lettersGuessInWord, check for win
 
-            if (lettersInWord.contains(letter)){
-                this.lettersInWord.remove(letter);
+            Character chars = letter.charAt(0);
+
+            if (lettersInWord.contains(chars)){
+                this.lettersInWord.remove(chars);
                 checkForWin();
             }
             else{
+                System.out.println("not in word");
                 lives--;
                 checkForLoss();
             }
@@ -439,7 +442,10 @@ public class Server {
 
         boolean checkForWin(){
            if (lettersInWord.size() == 0 ){
-               System.out.println("Win");
+               System.out.println("won");
+               for(int i = 0; i < players.size(); i++){
+                   send("GAMEOVER", players.get(i).clientIndex);
+               }
                return true;
            }
             return false;
@@ -454,12 +460,14 @@ public class Server {
                     this.lettersInWord.add(c);
                 }
             }
+            System.out.println("lettersa in: "+ lettersInWord);
         }
 
 
         boolean checkForLoss(){
             if (lives < 0){
                 for(int i = 0; i < players.size(); i++){
+                    System.out.println("lost");
                     send("GAMEOVER", players.get(i).clientIndex);
                 }
                 return true;
