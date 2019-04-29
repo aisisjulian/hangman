@@ -711,6 +711,12 @@ public class ClientFx extends Application {
                 ss.startButton.setDisable(false);
                 ss.singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
                 ss.multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+                ss.easyButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+                ss.mediumButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+                ss.hardButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+                numLives = 5;
+                gs.initSpaceshipImages();
+                //gs.initKeyboard();
             });
 
 
