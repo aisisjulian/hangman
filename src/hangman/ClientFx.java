@@ -190,7 +190,8 @@ public class ClientFx extends Application {
                             System.out.println("play again");
                             primaryStage.setScene(startScene);
                             this.ss.startButton.setDisable(false);
-                            
+                            this.ss.singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+                            this.ss.multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
                         });
                         this.endScene = es.scene;
                         primaryStage.setScene(endScene);
