@@ -95,9 +95,6 @@ public class ClientFx extends Application {
                 primaryStage.setScene(waitScene);
             }
 
-           // gs = new GameScene();
-           // gameScene = gs.scene;
-            //primaryStage.setScene(gameScene);
             ss.startButton.setDisable(true);
         });
 
