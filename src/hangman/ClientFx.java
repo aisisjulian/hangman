@@ -95,6 +95,8 @@ public class ClientFx extends Application {
                 primaryStage.setScene(waitScene);
             }
 
+           // gs = new GameScene();
+           // gameScene = gs.scene;
             //primaryStage.setScene(gameScene);
             ss.startButton.setDisable(true);
         });
@@ -450,6 +452,7 @@ public class ClientFx extends Application {
         private Label header;
 
         public GameScene(){
+            numLives = 5;
             gamePane = new BorderPane();
             gameBackgroundImage = new Image("gameScene2.png");
             gameBackground = new Background(new BackgroundFill(new ImagePattern(gameBackgroundImage), CornerRadii.EMPTY, Insets.EMPTY));
@@ -461,6 +464,7 @@ public class ClientFx extends Application {
             bottomBox.setAlignment(Pos.CENTER);
             gamePane.setBottom(bottomBox);
             scene = new Scene(gamePane, 800, 600);
+            lettersPlayed = new ArrayList<>();
         }
 
         public void initWordDisplay(){
@@ -551,8 +555,7 @@ public class ClientFx extends Application {
             keyboardBox.setAlignment(Pos.CENTER);
             keyboardBox.setPrefSize(410, 150);
             keyboardBox.setPadding(new Insets(3,0,3,0));
-            //keyboardBox.setBackground(new Background(new BackgroundFill(new Color(0x19/255.0, 0x19/255.0, 0x70/255.0, .7), new CornerRadii(0), Insets.EMPTY)));
-//            gamePane.setBottom(keyboardBox);
+            this.keyboardBox.setDisable(false);
 
             /*display letter entered code*/
             bottomDisplay = new HBox();
@@ -576,7 +579,6 @@ public class ClientFx extends Application {
             this.bottomDisplay.setAlignment(Pos.CENTER);
             this.bottomDisplay.getChildren().addAll(this.enterBox, this.keyboardBox);
             this.enterBox.setAlignment(Pos.CENTER);
-
         }
 
         void enableKeyboard(){
