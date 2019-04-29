@@ -112,8 +112,6 @@ public class ClientFx extends Application {
 
 
 
-
-
         primaryStage.show();
     }
 
@@ -127,10 +125,6 @@ public class ClientFx extends Application {
                     this.gs = new GameScene();
                     this.gameScene = gs.scene;
                     primaryStage.setScene(this.gameScene);
-                    /*
-                    this.es = new EndScene();
-                    this.endScene = es.scene;
-                    primaryStage.setScene(endScene);*/
                 }
                 if(data.toString().split(" ")[0].equals("LETTER:")){
                     String l = data.toString().split(" ")[1];
@@ -141,16 +135,18 @@ public class ClientFx extends Application {
                         this.endScene = es.scene;
                         primaryStage.setScene(endScene);
                     }
-                    boolean eval = false;
-                    for(int i = 0; i < word.length(); i++){
-                        if(word.charAt(i) == l.charAt(0)){
-                           eval = true;
+                  //  else {
+                        boolean eval = false;
+                        for (int i = 0; i < word.length(); i++) {
+                            if (word.charAt(i) == l.charAt(0)) {
+                                eval = true;
+                            }
                         }
-                    }
-                    if(!eval){
-                        numLives--;
-                        gs.updateSpaceShipImage();
-                    }
+                        if (!eval) {
+                            numLives--;
+                            gs.updateSpaceShipImage();
+                        }
+                //    }
                 }
                 switch (data.toString()) {
                     case "CONNECTION":
@@ -617,7 +613,9 @@ public class ClientFx extends Application {
                 }
                 if(!eval){
                     numLives--;
-                    updateSpaceShipImage();
+                    if(numLives > 0) {
+                        updateSpaceShipImage();
+                    }
                 }
                 disableKeyboard();
                 letter = "";
@@ -667,7 +665,6 @@ public class ClientFx extends Application {
             }
 
             cword = new HBox(3);
-            System.out.println("word for end: " + word);
             for (int i = 0; i < word.length(); i++){
                 Label letter = new Label(word.charAt(i) + "");
                 if (lettersPlayed.contains(word.charAt(i) + "")){
