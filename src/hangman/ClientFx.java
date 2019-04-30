@@ -212,6 +212,7 @@ public class ClientFx extends Application {
                         gs.enableKeyboard();
                         break;
                     case "WIN":
+                        gs.disableKeyboard();
                         this.es = new EndScene(primaryStage);
                         this.endScene = es.scene;
                         gs.updateSpaceShipImage();
@@ -224,28 +225,32 @@ public class ClientFx extends Application {
                         fadeTransition.setOnFinished(ex-> primaryStage.setScene(endScene));
                         if(gs.header.getText().equals("")) {
                             gs.header.setText("YOU WIN :-)");
-                            gs.fadeHeader.play();
                             gs.fadeHeader.setOnFinished(e->fadeTransition.play());
+                            gs.fadeHeader.playFromStart();
                         }
                         else{
                             gs.fadeHeader.setOnFinished(e->{gs.header.setText("YOU WIN :-)");
-                                gs.fadeHeader.play();
+                                gs.fadeHeader.setOnFinished(ex->gs.header.setText(""));
+                                gs.fadeHeader.playFromStart();
                                 es.endMessage.setText("congrats, you win :-)");
-                                fadeTransition.play();
+                                fadeTransition.playFromStart();
                             });
                         }
 
                         break;
                     case "LOSE":
+                        gs.disableKeyboard();
                         this.es = new EndScene(primaryStage);
                         this.endScene = es.scene;
                         if(gs.header.getText().equals("")) {
                             gs.header.setText("YOU LOSE :-(");
-                            gs.fadeHeader.play();
+                            gs.fadeHeader.setOnFinished(ex->gs.header.setText(""));
+                            gs.fadeHeader.playFromStart();
                         }
                         else{
                             gs.fadeHeader.setOnFinished(e->{gs.header.setText("YOU LOSE :-(");
-                                 gs.fadeHeader.play();});
+                                gs.fadeHeader.setOnFinished(ex->gs.header.setText(""));
+                                 gs.fadeHeader.playFromStart();});
                         }
                         gs.updateSpaceShipImage();
                         es.endMessage.setText("sorry, you lose :-(");
@@ -664,8 +669,8 @@ public class ClientFx extends Application {
                 ScaleTransition scaleTransition = new ScaleTransition();
                 scaleTransition.setDuration(Duration.millis(300));
                 scaleTransition.setNode(this.spaceship);
-                scaleTransition.setByY(1.2);
-                scaleTransition.setByX(1.2);
+                scaleTransition.setByY(1.0);
+                scaleTransition.setByX(1.0);
                 scaleTransition.setCycleCount(2);
                 scaleTransition.setAutoReverse(true);
                 scaleTransition.play();
@@ -701,9 +706,9 @@ public class ClientFx extends Application {
             row2.setAlignment(Pos.CENTER);
             row3.setAlignment(Pos.CENTER);
             keyboardBox = new VBox(10, row1, row2, row3);
-            keyboardBox.setAlignment(Pos.CENTER);
-            keyboardBox.setPrefSize(410, 150);
-            keyboardBox.setPadding(new Insets(3,0,3,0));
+            keyboardBox.setAlignment(Pos.CENTER_LEFT);
+            keyboardBox.setPrefSize(510, 150);
+            keyboardBox.setPadding(new Insets(3,100,3,0));
             this.keyboardBox.setDisable(false);
 
             /*display letter entered code*/
@@ -714,6 +719,7 @@ public class ClientFx extends Application {
             letterChosenLabel.setTextFill(Color.GOLD);
             letterChosenLabel.setAlignment(Pos.BASELINE_LEFT);
             letterChosenLabel.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 42));
+            letterChosenLabel.setAlignment(Pos.CENTER);
 
             submitButton = new Button("Submit");
             submitButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 12));
@@ -724,7 +730,7 @@ public class ClientFx extends Application {
             enterBox.setPrefSize(120, 150);
             enterBox.setPadding(new Insets(0, 0,0, 0));
 
-            bottomDisplay.setMaxSize(560, 150);
+            bottomDisplay.setPrefSize(800, 150);
             this.bottomDisplay.setAlignment(Pos.CENTER);
             this.bottomDisplay.getChildren().addAll(this.enterBox, this.keyboardBox);
             this.enterBox.setAlignment(Pos.CENTER);
