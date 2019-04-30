@@ -1,5 +1,7 @@
 package hangman;
 
+import javafx.animation.RotateTransition;
+import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -20,6 +22,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 
@@ -423,7 +426,32 @@ public class ClientFx extends Application {
             alienPic.setGraphic(iv);
             alienPic.setAlignment(Pos.BOTTOM_CENTER);
             alienPic.setPrefSize(400,350);
+
+
+            //Creating Translate Transition
+            RotateTransition rotateTransition = new RotateTransition();
+
+            //Setting the duration for the transition
+            rotateTransition.setDuration(Duration.millis(1000));
+
+            //Setting the node for the transition
+            rotateTransition.setNode(alienPic);
+
+            //Setting the angle of the rotation
+            rotateTransition.setByAngle(360);
+
+            //Setting the cycle count for the transition
+            rotateTransition.setCycleCount(50);
+
+            //Setting auto reverse value to false
+            rotateTransition.setAutoReverse(false);
+
+            //Playing the animation
+            rotateTransition.play();
+
             waitPane.setCenter(alienPic);
+
+
             scene = new Scene(waitPane, 500, 500);
         }
     }
