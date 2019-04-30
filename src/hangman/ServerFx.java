@@ -179,7 +179,11 @@ public class ServerFx extends Application {
                 Task<Void> task = new Task<>() {
                     @Override
                     protected Void call() throws Exception {
-                        server = new Server(Integer.parseInt(p));
+                        server = new Server(Integer.parseInt(p), data-> Platform.runLater(()->{
+                            if(data.toString().equals("CONNECTION") || data.toString().equals("DISCONNECTED")){
+                                numConnectedLabel.setText("[     Clients Connected:   "+server.numClients+ "   ]");
+                            }
+                        }) );
                         server.startConn(ss);
                         System.out.println("Message: " + server.data);
                         return null;

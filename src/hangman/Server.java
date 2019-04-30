@@ -33,9 +33,8 @@ public class Server {
     private ArrayList<String> hardDictionary = new ArrayList<>();
 
     static int numClients = 0;
-    static int numGames = 0;
 
-    public Server(int port){
+    public Server(int port, Consumer<Serializable> callback){
         this.callback = callback;
         this.port = port;
         initDictionary();
@@ -66,10 +65,6 @@ public class Server {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-//        prints the library
-//        for (int i = 0; i < dictionary.size(); i++){
-//            System.out.println(dictionary.get(i));
-//        }
 
     }
 
@@ -83,6 +78,7 @@ public class Server {
                 ClientThread t = new ClientThread(ss.accept());
                 clientThreadList.add(t);
                 t.clientIndex = clientThreadList.size()-1;
+                numClients++;
                 t.start();
             }
         }
@@ -145,11 +141,10 @@ public class Server {
         // data members for io //
         ObjectOutputStream out;
         private Socket socket;
-        boolean isConnected = false;
+        boolean isConnected;
 
         ClientThread(Socket s){
             this.socket = s;
-            this.clientIndex = numClients;
             setDaemon(true);
             this.isConnected = true;
 
@@ -161,27 +156,6 @@ public class Server {
 
         }
 
-        public void setClientIndex( int index ){ this.clientIndex = index; }
-        public int getClientIndex(){ return this.clientIndex; }
-
-        public void setConnected( boolean c ){ this.isConnected = c; }
-        public boolean isConnected(){ return this.isConnected; }
-
-        public void setHasPlayed( boolean p ){ this.hasPlayed = p; }
-        public boolean HasPlayed(){ return this.hasPlayed; }
-
-        public void setIsPlayingAgain( boolean p ){ this.isPlayingAgain = p; }
-        public boolean isPlayingAgain(){ return this.isPlayingAgain; }
-
-        public void setIsInGame( boolean g ){ this.isInGame = g; }
-        public boolean isInGame(){ return this.isInGame; }
-
-        public void setGame(Game g){ this.game = g; }
-        public Game getGame(){ return this.game; }
-
-        public Serializable getMessage(){ return data; }
-
-
         public void run() {
            try(
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -190,10 +164,14 @@ public class Server {
                this.out = out;
                socket.setTcpNoDelay(true);
                send("CONNECTION", this.clientIndex);
+               callback.accept("CONNECTION");
                while(this.isConnected){
                    Serializable data = (Serializable) in.readObject();
                    System.out.println(data.toString());
                    if(data.toString().equals("DISCONNECTED")){
+                       numClients--;
+                       this.isConnected = false;
+                       callback.accept("DISCONNECTED");
                        if(this.game.isActive){
                            if(this.game.players.indexOf(this) == this.game.currentlyGuessing) {
                                this.game.removePlayer(this);
@@ -213,8 +191,6 @@ public class Server {
                                this.game.removePlayer(this);
                            }
                        }
-                       numClients--;
-                       this.isConnected = false;
                    }
                    if(data.toString().split(" ")[0].equals("NUM-PLAYERS:")){
                        this.numPlayersChosen = Integer.valueOf(data.toString().split(" ")[1]);
