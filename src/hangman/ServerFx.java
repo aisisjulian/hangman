@@ -32,9 +32,24 @@ public class ServerFx extends Application {
 
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage){
         primaryStage.setTitle("Space-Man Server");
         serverScene = new serverDisplay();
+
+        serverScene.serverOff.setOnAction(e->
+        {
+            try {
+                isServerOn = false;
+                server.closeConn();
+                this.ss.close();
+                serverScene.displayServerOff();
+                serverScene.message.setText("~ server off ~");
+            }
+            catch (Exception ex){
+                serverScene.message.setText("FAILED TO TURN SERVER OFF");
+            }
+        });
+
         primaryStage.setScene(serverScene.scene);
         primaryStage.show();
     }
@@ -121,15 +136,23 @@ public class ServerFx extends Application {
         void displayServerOn(){
             portInput.setVisible(false);
             portInputLabel.setVisible(false);
-
             topBoxOn = new VBox(10, header, message, serverOptions, numConnectedLabel);
             topBoxOn.setPadding(new Insets(10));
             topBoxOn.setAlignment(Pos.TOP_CENTER);
-
             serverPane.setTop(topBoxOn);
-
             serverOn.setDisable(true);
-
+        }
+        void displayServerOff(){
+            portInput.setVisible(true);
+            portInput.clear();
+            portInputLabel.setVisible(true);
+            portBox.setVisible(true);
+            topBoxOn = new VBox(10, header, message, this.portBox, serverOptions, numConnectedLabel);
+            topBoxOn.setPadding(new Insets(10));
+            topBoxOn.setAlignment(Pos.TOP_CENTER);
+            serverPane.setTop(topBoxOn);
+            serverOn.setDisable(false);
+            serverOff.setDisable(true);
         }
 
         EventHandler<ActionEvent> createServer = new EventHandler<ActionEvent>() {

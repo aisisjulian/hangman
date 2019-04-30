@@ -93,10 +93,12 @@ public class Server {
 
     public void send(Serializable data, int clientIndex){
         try{
-            clientThreadList.get(clientIndex).out.writeObject(data);
+            if(clientThreadList.get(clientIndex).isConnected) {
+                clientThreadList.get(clientIndex).out.writeObject(data);
+            }
         }
         catch(Exception e){
-            System.out.println("Exception -> send()");
+            System.out.println("Exception -> send() " + data.toString());
         }
 
     }
@@ -191,7 +193,29 @@ public class Server {
                while(this.isConnected){
                    Serializable data = (Serializable) in.readObject();
                    System.out.println(data.toString());
-
+                   if(data.toString().equals("DISCONNECTED")){
+                       if(this.game.isActive){
+                           if(this.game.players.indexOf(this) == this.game.currentlyGuessing) {
+                               this.game.removePlayer(this);
+                               if (this.game.currentlyGuessing < this.game.numPlayersConnected - 1) {
+                                   this.game.currentlyGuessing++;
+                                   send("WAITING-FOR-GUESS", this.game.players.get(this.game.currentlyGuessing).clientIndex);
+                               } else {
+                                   this.game.currentlyGuessing = 0;
+                                   send("WAITING-FOR-GUESS", this.game.players.get(this.game.currentlyGuessing).clientIndex);
+                               }
+                               if(this.game.numPlayersConnected == 0){
+                                   gamesList.remove(this.game);
+                                   this.game.isActive = false;
+                               }
+                           }
+                           else{
+                               this.game.removePlayer(this);
+                           }
+                       }
+                       numClients--;
+                       this.isConnected = false;
+                   }
                    if(data.toString().split(" ")[0].equals("NUM-PLAYERS:")){
                        this.numPlayersChosen = Integer.valueOf(data.toString().split(" ")[1]);
                    }
@@ -270,6 +294,11 @@ public class Server {
             }
         }
 
+        void removePlayer(ClientThread player){
+            players.remove(player);
+            numPlayersConnected--;
+        }
+
         void addPlayer(ClientThread player){
             players.add(player);
             numPlayersConnected++;
@@ -326,11 +355,12 @@ public class Server {
 
         void evaluateGuess(String letter){
             for(int i = 0; i < players.size(); i++){
-                if(i != currentlyGuessing) {
+                if(players.get(i).isConnected) {
                     send("LETTER: " + letter, players.get(i).clientIndex);
                 }
             }
-            if(currentlyGuessing < numPlayers-1){
+
+            if(currentlyGuessing < numPlayersConnected-1){
                 currentlyGuessing++;
             }
             else {

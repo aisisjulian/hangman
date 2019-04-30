@@ -54,6 +54,14 @@ public class ClientFx extends Application {
     }
 
     @Override
+    public void stop() throws Exception{
+        if(isConnected) {
+            client.send("DISCONNECTED");
+            isConnected = false;
+            client.closeConn();
+        }
+    }
+    @Override
     public void start(Stage primaryStage) throws Exception{
         primaryStage.setTitle("Welcome to Spaceman :-)");
         startScene = ss.scene;
@@ -123,6 +131,8 @@ public class ClientFx extends Application {
                     System.out.println(word);
                     this.gs = new GameScene();
                     this.gameScene = gs.scene;
+                    gs.disableKeyboard();
+                    gs.submitButton.setDisable(true);
                     primaryStage.setScene(this.gameScene);
                 }
                 if(data.toString().split(" ")[0].equals("LETTER:")){
