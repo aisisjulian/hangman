@@ -1,7 +1,6 @@
 package hangman;
 
-import javafx.animation.RotateTransition;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -12,12 +11,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.CubicCurveTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
@@ -30,7 +31,6 @@ public class ClientFx extends Application {
 
     private ClientConnection client;
     private boolean isConnected = false;
-    private ArrayList<String> clientsConnected = new ArrayList<>();
     private ArrayList<String> lettersPlayed = new ArrayList<>();
     private Runnable task;
     private Thread t;
@@ -65,12 +65,11 @@ public class ClientFx extends Application {
         }
     }
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage){
         primaryStage.setTitle("Welcome to Spaceman :-)");
         startScene = ss.scene;
         gameScene = gs.scene;
         waitScene = ws.scene;
-        //endScene = es.scene;
         primaryStage.setScene(this.startScene);
 
 
@@ -133,6 +132,7 @@ public class ClientFx extends Application {
                     this.word = data.toString().split(" ")[1];
                     System.out.println(word);
                     this.gs = new GameScene();
+                    gs.initSpaceshipImages(primaryStage);
                     this.gameScene = gs.scene;
                     gs.disableKeyboard();
                     gs.submitButton.setDisable(true);
@@ -142,26 +142,29 @@ public class ClientFx extends Application {
                     String l = data.toString().split(" ")[1];
                     lettersPlayed.add(l);
                     gs.updateWordDisplay();
-                    if (numLives == 0){
-                        this.endScene = es.scene;
-                        primaryStage.setScene(this.endScene);
-                    }
-                  //  else {
-                        boolean eval = false;
-                        for (int i = 0; i < word.length(); i++) {
-                            if (word.charAt(i) == l.charAt(0)) {
-                                eval = true;
-                            }
+
+                    boolean eval = false;
+                    for (int i = 0; i < word.length(); i++) {
+                        if (word.charAt(i) == l.charAt(0)) {
+                                gs.header.setOpacity(1.0);
+                                gs.header.setText("YAY! Letter '" + l + "' is in the word!");
+                                gs.fadeHeader.playFromStart();
+                            eval = true;
                         }
-                        if (!eval) {
-                            numLives--;
+                    }
+                    if (!eval) {
+                        numLives--;
+                            gs.header.setOpacity(1.0);
+                            gs.header.setText("BOO! Letter '" + l + "' is not in the word!");
+                            gs.fadeHeader.playFromStart();
+                        if(numLives >= 0) {
                             gs.updateSpaceShipImage();
                         }
-                //    }
+                    }
                 }
                 switch (data.toString()) {
                     case "CONNECTION":
-                        ss.header.setText("CONNECTED TO SERVER");
+                        ss.header.setText("~ Connected to Server ~");
                         ss.header.setPrefSize(300, 40);
                         ss.header.setAlignment(Pos.CENTER);
                         isConnected = true;
@@ -184,22 +187,68 @@ public class ClientFx extends Application {
                         ss.portInput.setVisible(true);
                         ss.connectButton.setDisable(false);
                         ss.connectButton.setText("CONNECT");
-                        ss.header.setText("NO CONNECTION");
+                        ss.header.setText("~ No Connection ~");
                         ss.header.setPrefSize(300, 40);
                         ss.header.setAlignment(Pos.CENTER);
                         started = false;
                         primaryStage.setScene(this.startScene);
                         break;
                     case "START":
-                        numLives = 5;
+                        this.numLives = 5;
+                        break;
+                    case "SINGLE-PLAYER":
+                        isSinglePlayer = true;
                         break;
                     case "WAITING-FOR-GUESS":
+                        if((gs.header.getText().equals("") && !isSinglePlayer) || gs.header.getText().equals("Waiting for next player to guess...")) {
+                            gs.header.setText("Choose a letter to guess.");
+                            gs.fadeHeader.setOnFinished(ev-> {gs.header.setText("");});
+                            gs.fadeHeader.play();
+                        }
+                        else if (!isSinglePlayer){
+                            gs.fadeHeader.setOnFinished(e->{gs.header.setText("Choose a letter to guess.");
+                                 gs.fadeHeader.play();});
+                        }
                         gs.enableKeyboard();
                         break;
-                    case "GAMEOVER":
+                    case "WIN":
                         this.es = new EndScene(primaryStage);
                         this.endScene = es.scene;
-                        primaryStage.setScene(endScene);
+                        gs.updateSpaceShipImage();
+                        FadeTransition fadeTransition = new FadeTransition(Duration.millis(1500));
+                        fadeTransition.setNode(gs.spaceship);
+                        fadeTransition.setFromValue(1.0);
+                        fadeTransition.setToValue(0);
+                        fadeTransition.setCycleCount(2);
+                        fadeTransition.setAutoReverse(false);
+                        fadeTransition.setOnFinished(ex-> primaryStage.setScene(endScene));
+                        if(gs.header.getText().equals("")) {
+                            gs.header.setText("YOU WIN :-)");
+                            gs.fadeHeader.play();
+                            gs.fadeHeader.setOnFinished(e->fadeTransition.play());
+                        }
+                        else{
+                            gs.fadeHeader.setOnFinished(e->{gs.header.setText("YOU WIN :-)");
+                                gs.fadeHeader.play();
+                                es.endMessage.setText("congrats, you win :-)");
+                                fadeTransition.play();
+                            });
+                        }
+
+                        break;
+                    case "LOSE":
+                        this.es = new EndScene(primaryStage);
+                        this.endScene = es.scene;
+                        if(gs.header.getText().equals("")) {
+                            gs.header.setText("YOU LOSE :-(");
+                            gs.fadeHeader.play();
+                        }
+                        else{
+                            gs.fadeHeader.setOnFinished(e->{gs.header.setText("YOU LOSE :-(");
+                                 gs.fadeHeader.play();});
+                        }
+                        gs.updateSpaceShipImage();
+                        es.endMessage.setText("sorry, you lose :-(");
                         break;
                 }
             });
@@ -232,6 +281,7 @@ public class ClientFx extends Application {
             header.setTextFill(Color.WHITE);
             header.setPrefSize(250, 40);
             header.setAlignment(Pos.CENTER);
+            header.setPadding(new Insets(15));
             portLabel = new Label("PORT :");
             portLabel.setTextFill(Color.WHITE);
             portLabel.setFont(Font.font("Courier", FontWeight.BOLD, 17));
@@ -271,12 +321,18 @@ public class ClientFx extends Application {
             singlePlayerButton.setOnMouseClicked(e -> {
                 isSinglePlayer = true;
                 chosenNumPlayers = 1;
+                if(!chosenDifficulty.equals("")){
+                    startButton.setDisable(false);
+                }
                 singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
                 multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
             });
             singlePlayerButton.setOnAction(e->{
                 isSinglePlayer = true;
                 chosenNumPlayers = 1;
+                if(!chosenDifficulty.equals("")){
+                    startButton.setDisable(false);
+                }
                 twoPlayerButton.setDisable(true); twoPlayerButton.setOpacity(.5);
                 threePlayerButton.setDisable(true); threePlayerButton.setOpacity(.5);
                 fourPlayerButton.setDisable(true); fourPlayerButton.setOpacity(.5);
@@ -289,15 +345,11 @@ public class ClientFx extends Application {
             multiPlayerButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 18));
             multiPlayerButton.setOnMouseClicked(e -> {
                 isSinglePlayer = false;
+                twoPlayerButton.setDisable(false);
+                threePlayerButton.setDisable(false);
+                fourPlayerButton.setDisable(false);
                 multiPlayerButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
                 singlePlayerButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
-            });
-            multiPlayerButton.setOnAction(e->{
-                isSinglePlayer = false;
-                chosenNumPlayers = 0;
-                twoPlayerButton.setDisable(false); twoPlayerButton.setOpacity(1);
-                threePlayerButton.setDisable(false); threePlayerButton.setOpacity(1);
-                fourPlayerButton.setDisable(false); fourPlayerButton.setOpacity(1);
             });
 
             HBox playerMode = new HBox(10, singlePlayerButton, multiPlayerButton);
@@ -310,6 +362,9 @@ public class ClientFx extends Application {
             twoPlayerButton.setFont(Font.font("verdana", FontWeight.BOLD, 11));
             twoPlayerButton.setOnAction(e->{
                 chosenNumPlayers = 2;
+                if(!chosenDifficulty.equals("") && !isSinglePlayer){
+                    startButton.setDisable(false);
+                }
                 twoPlayerButton.setOpacity(.5);
                 threePlayerButton.setOpacity(1);
                 fourPlayerButton.setOpacity(1);
@@ -322,6 +377,9 @@ public class ClientFx extends Application {
             threePlayerButton.setFont(Font.font("verdana", FontWeight.BOLD, 11));
             threePlayerButton.setOnAction(e->{
                 chosenNumPlayers = 3;
+                if(!chosenDifficulty.equals("") && !isSinglePlayer){
+                    startButton.setDisable(false);
+                }
                 twoPlayerButton.setOpacity(1);
                 threePlayerButton.setOpacity(.5);
                 fourPlayerButton.setOpacity(1);
@@ -334,12 +392,13 @@ public class ClientFx extends Application {
             fourPlayerButton.setFont(Font.font("verdana", FontWeight.BOLD, 11));
             fourPlayerButton.setOnAction(e->{
                 chosenNumPlayers = 4;
+                if(!chosenDifficulty.equals("") && !isSinglePlayer){
+                    startButton.setDisable(false);
+                }
                 twoPlayerButton.setOpacity(1);
                 threePlayerButton.setOpacity(1);
                 fourPlayerButton.setOpacity(.5);
             });
-
-
 
             HBox difficultyBox;
             easyButton = new Button("Easy");
@@ -349,7 +408,9 @@ public class ClientFx extends Application {
             easyButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 14));
             easyButton.setOnMouseClicked(e -> {
                 chosenDifficulty = "easy";
-                //client.send("DIFFICULTY: easy");
+                if((!isSinglePlayer && chosenNumPlayers > 1) || (isSinglePlayer && chosenNumPlayers == 1)){
+                    startButton.setDisable(false);
+                }
                 easyButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
                 mediumButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
                 hardButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
@@ -361,7 +422,9 @@ public class ClientFx extends Application {
             mediumButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 14));
             mediumButton.setOnMouseClicked(e -> {
                 chosenDifficulty = "medium";
-                //client.send("DIFFICULTY: medium");
+                if((!isSinglePlayer && chosenNumPlayers > 1) || (isSinglePlayer && chosenNumPlayers == 1)){
+                    startButton.setDisable(false);
+                }
                 mediumButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
                 easyButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
                 hardButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
@@ -373,7 +436,9 @@ public class ClientFx extends Application {
             hardButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 14));
             hardButton.setOnMouseClicked(e -> {
                 chosenDifficulty = "hard";
-                //client.send("DIFFICULTY: hard");
+                if((!isSinglePlayer && chosenNumPlayers > 1) || (isSinglePlayer && chosenNumPlayers == 1)){
+                    startButton.setDisable(false);
+                }
                 hardButton.setBackground(new Background(new BackgroundFill(Color.DEEPPINK, new CornerRadii(7), Insets.EMPTY)));
                 mediumButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
                 easyButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
@@ -388,6 +453,7 @@ public class ClientFx extends Application {
             startButton.setTextFill(Color.MIDNIGHTBLUE);
             startButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 19));
             startButton.setTextAlignment(TextAlignment.CENTER);
+            startButton.setDisable(true);
 
             HBox numPlayersBox = new HBox(8, twoPlayerButton, threePlayerButton, fourPlayerButton);
             numPlayersBox.setAlignment(Pos.CENTER);
@@ -425,33 +491,24 @@ public class ClientFx extends Application {
             iv.setFitWidth(400);
             alienPic.setGraphic(iv);
             alienPic.setAlignment(Pos.BOTTOM_CENTER);
-            alienPic.setPrefSize(400,350);
+            alienPic.setPrefSize(200,250);
 
-
-            //Creating Translate Transition
             RotateTransition rotateTransition = new RotateTransition();
-
-            //Setting the duration for the transition
+            ScaleTransition scaleTransition = new ScaleTransition();
+            scaleTransition.setDuration(Duration.millis(1200));
+            scaleTransition.setNode(alienPic);
+            scaleTransition.setByY(-.30);
+            scaleTransition.setByX(-.30);
+            scaleTransition.setCycleCount(50);
+            scaleTransition.setAutoReverse(true);
             rotateTransition.setDuration(Duration.millis(1000));
-
-            //Setting the node for the transition
             rotateTransition.setNode(alienPic);
-
-            //Setting the angle of the rotation
             rotateTransition.setByAngle(360);
-
-            //Setting the cycle count for the transition
-            rotateTransition.setCycleCount(50);
-
-            //Setting auto reverse value to false
+            rotateTransition.setCycleCount(100);
             rotateTransition.setAutoReverse(false);
-
-            //Playing the animation
             rotateTransition.play();
-
+            scaleTransition.play();
             waitPane.setCenter(alienPic);
-
-
             scene = new Scene(waitPane, 500, 500);
         }
     }
@@ -482,9 +539,12 @@ public class ClientFx extends Application {
         private Button endButton;
 
         private Label spaceship;
+        private int imageNum = 0;
         private ArrayList<Image> ssImageList;
+        Stage primaryStage;
 
         private Label header;
+        FadeTransition fadeHeader = new FadeTransition(Duration.millis(4000));
 
         public GameScene(){
             numLives = 5;
@@ -492,7 +552,6 @@ public class ClientFx extends Application {
             gameBackgroundImage = new Image("gameScene2.png");
             gameBackground = new Background(new BackgroundFill(new ImagePattern(gameBackgroundImage), CornerRadii.EMPTY, Insets.EMPTY));
             gamePane.setBackground(gameBackground);
-            initSpaceshipImages();
             initWordDisplay();
             initKeyboard();
             this.bottomBox = new VBox(10, this.wordDisplay, this.bottomDisplay);
@@ -500,6 +559,20 @@ public class ClientFx extends Application {
             gamePane.setBottom(bottomBox);
             scene = new Scene(gamePane, 800, 600);
             lettersPlayed = new ArrayList<>();
+
+            this.header = new Label("");
+            header.setFont(Font.font("Courier", FontWeight.EXTRA_LIGHT, 24));
+            header.setTextFill(Color.WHITE);
+            header.setPrefSize(1000, 50);
+            header.setBackground(new Background(new BackgroundFill(new Color(0xCD/255.0, 0x28/255.0, 0x39/255.0, .7), new CornerRadii(0), Insets.EMPTY)));
+            header.setAlignment(Pos.CENTER);
+            fadeHeader.setNode(header);
+            fadeHeader.setFromValue(1.0);
+            fadeHeader.setToValue(0.2);
+            fadeHeader.setCycleCount(1);
+            fadeHeader.setAutoReverse(false);
+            fadeHeader.setOnFinished(e-> {header.setText("");});
+            gamePane.setTop(header);
         }
 
         public void initWordDisplay(){
@@ -530,7 +603,8 @@ public class ClientFx extends Application {
             gamePane.setBottom(bottomBox);
         }
 
-        public void initSpaceshipImages(){
+        public void initSpaceshipImages(Stage primaryStage){
+            this.primaryStage = primaryStage;
             this.spaceship = new Label();
             this.spaceship.setAlignment(Pos.BOTTOM_CENTER);
             this.ssImageList = new ArrayList<>();
@@ -539,7 +613,7 @@ public class ClientFx extends Application {
                 Image spaceShipImage = new Image("spaceship" + (i+1) + ".png");
                 this.ssImageList.add(spaceShipImage);
             }
-            ImageView iv = new ImageView(ssImageList.get((5-numLives)+1));
+            ImageView iv = new ImageView(ssImageList.get(imageNum));
             iv.setFitWidth(350);
             iv.setFitHeight(350);
             this.spaceship.setGraphic(iv);
@@ -547,15 +621,55 @@ public class ClientFx extends Application {
         }
 
         public void updateSpaceShipImage(){
-            int i = 1;
-            if(numLives < 5){
-                i = (5-numLives)+1;
-            }
-
-            ImageView iv = new ImageView(ssImageList.get(i));
+            imageNum++;
+            ImageView iv = new ImageView(ssImageList.get(imageNum));
             iv.setFitWidth(350);
             iv.setFitHeight(350);
             this.spaceship.setGraphic(iv);
+
+            if(imageNum == 6){
+                disableKeyboard();
+                Path path = new Path();
+                MoveTo moveTo = new MoveTo(100, 175);
+                CubicCurveTo cubicCurveTo = new CubicCurveTo(400, 40, 175, 250, 700, 0);
+                path.getElements().add(moveTo);
+                path.getElements().add(cubicCurveTo);
+                PathTransition pathTransition = new PathTransition();
+                pathTransition.setDuration(Duration.millis(2000));
+                pathTransition.setNode(this.spaceship);
+                pathTransition.setPath(path);
+                pathTransition.setOrientation(PathTransition.OrientationType.ORTHOGONAL_TO_TANGENT);
+                pathTransition.setAutoReverse(false);
+                RotateTransition rotateTransition = new RotateTransition();
+                rotateTransition.setDuration(Duration.millis(550));
+                rotateTransition.setNode(this.spaceship);
+                rotateTransition.setByAngle(360);
+                rotateTransition.setCycleCount(4);
+                rotateTransition.setAutoReverse(false);
+                rotateTransition.play();
+                pathTransition.setOnFinished(e -> {
+                primaryStage.setScene(endScene);});
+                pathTransition.play();
+
+            }
+            else {
+                TranslateTransition translateTransition = new TranslateTransition();
+                translateTransition.setDuration(Duration.millis(50));
+                translateTransition.setNode(wordDisplay);
+                translateTransition.setByX(30);
+                translateTransition.setByX(-30);
+                translateTransition.setCycleCount(3);
+                translateTransition.setAutoReverse(true);
+                translateTransition.play();
+                ScaleTransition scaleTransition = new ScaleTransition();
+                scaleTransition.setDuration(Duration.millis(300));
+                scaleTransition.setNode(this.spaceship);
+                scaleTransition.setByY(1.2);
+                scaleTransition.setByX(1.2);
+                scaleTransition.setCycleCount(2);
+                scaleTransition.setAutoReverse(true);
+                scaleTransition.play();
+            }
             gamePane.setCenter(this.spaceship);
         }
 
@@ -601,7 +715,7 @@ public class ClientFx extends Application {
             letterChosenLabel.setAlignment(Pos.BASELINE_LEFT);
             letterChosenLabel.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 42));
 
-            submitButton = new Button("submit");
+            submitButton = new Button("Submit");
             submitButton.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 12));
             submitButton.setAlignment(Pos.CENTER);
             submitButton.setOnAction(sendLetter);
@@ -637,24 +751,38 @@ public class ClientFx extends Application {
             pressed.setDisable(true);
 
             if (!(letter.isBlank())) {
-                client.send("LETTER: " + letter);
                 lettersPlayed.add(letter);
                 submitButton.setDisable(true); /*disable until its that players turn*/
                 updateWordDisplay();
                 boolean eval = false;
                 for(int i = 0; i < word.length(); i++){
                     if(word.charAt(i) == letter.charAt(0)){
+                            gs.header.setOpacity(1.0);
+                            gs.header.setText("YAY! Letter '" + letter + "' is in the word!");
+                            gs.fadeHeader.playFromStart();
                         eval = true;
                     }
                 }
                 if(!eval){
                     numLives--;
-                    if(numLives > 0) {
+                        gs.header.setOpacity(1.0);
+                        gs.header.setText("BOO! Letter '" + letter + "' is not in the word!");
+                        gs.fadeHeader.playFromStart();
+                    if(numLives >= 0) {
                         updateSpaceShipImage();
                     }
                 }
+                if(gs.header.getText().equals("") && !isSinglePlayer) {
+                    gs.header.setText("Waiting for next player to guess...");
+                    gs.fadeHeader.setOnFinished(ev-> {gs.header.setText("");});
+                    gs.fadeHeader.play();
+                }
+                else if(!isSinglePlayer ){
+                    gs.fadeHeader.setOnFinished(e->{gs.header.setText("Waiting for next player to guess...");
+                         gs.fadeHeader.play();});
+                }
+                client.send("LETTER: " + letter);
                 disableKeyboard();
-                letter = "";
             }
 
 
@@ -677,6 +805,7 @@ public class ClientFx extends Application {
         private Image endBackgroundImage;
         private Background endBackground;
         private Label endTitle;
+        private Label endMessage;
         private Button quitBtn, playAgainBtn;
         private HBox buttonBox;
         private VBox endBox;
@@ -695,6 +824,13 @@ public class ClientFx extends Application {
             endTitle.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 50));
             endTitle.setAlignment(Pos.CENTER);
 
+            endMessage = new Label("");
+            endMessage.setPrefSize(1000, 50);
+
+            endMessage.setTextFill(Color.WHITE);
+            endMessage.setFont(Font.font("sans-serif", FontWeight.EXTRA_BOLD, 20));
+            endMessage.setAlignment(Pos.CENTER);
+
             // display letters guessed
             for (int i = 0; i < lettersPlayed.size(); i++){
                 System.out.print(lettersPlayed.get(i));
@@ -706,18 +842,13 @@ public class ClientFx extends Application {
                 if (lettersPlayed.contains(word.charAt(i) + "")){
                     letter.setTextFill(Color.GOLD);
                 }
-                else { letter.setTextFill(Color.RED); }
+                else { letter.setTextFill(Color.LEMONCHIFFON); }
                 letter.setAlignment(Pos.BASELINE_LEFT);
                 letter.setFont(Font.font("Courier", FontWeight.EXTRA_BOLD, 42));
                 cword.getChildren().add(letter);
             }
 
-
-            // display the final word
-            // display win or lose
-            // ask to quit or new game
             quitBtn = new Button("Quit");
-
             quitBtn.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
             quitBtn.setPrefSize(130, 40);
             quitBtn.setTextFill(Color.INDIGO);
@@ -751,21 +882,25 @@ public class ClientFx extends Application {
                 ss.easyButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
                 ss.mediumButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
                 ss.hardButton.setBackground(new Background(new BackgroundFill(Color.GOLD, new CornerRadii(7), Insets.EMPTY)));
+                ss.twoPlayerButton.setDisable(true); ss.twoPlayerButton.setOpacity(.5);
+                ss.threePlayerButton.setDisable(true); ss.threePlayerButton.setOpacity(.5);
+                ss.fourPlayerButton.setDisable(true); ss.fourPlayerButton.setOpacity(.5);
+                ss.startButton.setDisable(true);
                 numLives = 5;
-                gs.initSpaceshipImages();
-                //gs.initKeyboard();
+                gs.initSpaceshipImages(primaryStage);
             });
-
 
             buttonBox = new HBox(10, quitBtn, playAgainBtn);
             buttonBox.setAlignment(Pos.CENTER);
 
-            //endPane.setCenter(buttonBox);
-            endBox = new VBox(30, endTitle, buttonBox);
+            endBox = new VBox(30, endTitle, endMessage, buttonBox);
+            endBox.setAlignment(Pos.CENTER);
             endPane.setCenter(endBox);
 
             endPane.setBottom(cword);
-            cword.setAlignment(Pos.TOP_CENTER);
+            cword.setPadding(new Insets(60, 0, 60, 0));
+            cword.setBackground(new Background(new BackgroundFill(new Color(0x48/255.0, 0x12/255.0, 0x70/255.0, .7), new CornerRadii(0), Insets.EMPTY)));
+            cword.setAlignment(Pos.CENTER);
 
             scene = new Scene(endPane, 500, 500);
         }

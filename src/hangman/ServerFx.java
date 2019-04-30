@@ -161,14 +161,14 @@ public class ServerFx extends Application {
                 String p = portInput.getText().split("\n")[0];
 
                 try {
-                    port = Integer.parseInt(p);
+                    port = Integer.valueOf(p);
                     ss  = new ServerSocket(port);
                     serverOn.setDisable(true);
                     serverOff.setDisable(false);
                     portBox.setVisible(false);
                     message.setText("~ server on ~");
                     isServerOn = true;
-                }catch(IOException e){
+                }catch(Exception e){
                     System.out.println("Failure-> creating server socket");
                     portInput.clear();
                     serverOn.setDisable(false);
@@ -185,7 +185,6 @@ public class ServerFx extends Application {
                             }
                         }) );
                         server.startConn(ss);
-                        System.out.println("Message: " + server.data);
                         return null;
                     }
                 };

@@ -99,17 +99,6 @@ public class Server {
 
     }
 
-    public void broadcast(Serializable data){
-        try{
-            for (int i = 0; i <clientThreadList.size(); i++){
-                clientThreadList.get(i).out.writeObject(data);
-            }
-        }
-        catch(Exception e){
-            System.out.println("Exception -> broadcast()");
-        }
-    }
-
     public void closeConn() throws Exception{
         for(int i = 0; i < clientThreadList.size(); i++){
             if(clientThreadList.get(i).isConnected){
@@ -175,6 +164,9 @@ public class Server {
                        if(this.game.isActive){
                            if(this.game.players.indexOf(this) == this.game.currentlyGuessing) {
                                this.game.removePlayer(this);
+                               if(this.game.numPlayersConnected == 1){
+                                   send("SINGLE-PLAYER", game.players.get(0).clientIndex);
+                               }
                                if (this.game.currentlyGuessing < this.game.numPlayersConnected - 1) {
                                    this.game.currentlyGuessing++;
                                    send("WAITING-FOR-GUESS", this.game.players.get(this.game.currentlyGuessing).clientIndex);
@@ -189,6 +181,9 @@ public class Server {
                            }
                            else{
                                this.game.removePlayer(this);
+                               if(this.game.numPlayersConnected == 1){
+                                   send("SINGLE-PLAYER", game.players.get(0).clientIndex);
+                               }
                            }
                        }
                    }
@@ -207,7 +202,9 @@ public class Server {
                    }
                    if(data.toString().split(" ")[0].equals("LETTER:")){
                        String letter = data.toString().split(" ")[1];
-                       game.evaluateGuess(letter);
+                       if(!game.evaluateGuess(letter)){
+                           gamesList.remove(this.game);
+                       }
                    }
 
                }
@@ -290,8 +287,6 @@ public class Server {
                 lettersGuessed = new ArrayList<>(); //index represents letter
                 for(int i = 0; i < 26; i++){ this.lettersGuessed.add(false); }
 
-                //    INSERT CODE THAT PICKS RANDOM WORD   //
-
                 Random r = new Random();
                 int w;
                 if(difficulty.equals("easy")){
@@ -313,25 +308,15 @@ public class Server {
                     send("WORD: " + word, players.get(i).clientIndex);
                     send("START", players.get(i).clientIndex);
                 }
-              //  lettersGuessedInWord = new ArrayList<>(); //index represents letter
-              //  for(int i = 0; i < wordLength; i++){ lettersGuessedInWord.add(false); }
-                //*****************************************//
 
                 currentlyGuessing = 0;
                 send("WAITING-FOR-GUESS", players.get(currentlyGuessing).clientIndex);
             }
         }
 
-
-        void resetGame(){
-            players.clear();
-            numPlayersConnected = 0;
-        }
-
-
-        void evaluateGuess(String letter){
+        boolean evaluateGuess(String letter){
             for(int i = 0; i < players.size(); i++){
-                if(players.get(i).isConnected) {
+                if(players.get(i).isConnected && i != currentlyGuessing) {
                     send("LETTER: " + letter, players.get(i).clientIndex);
                 }
             }
@@ -345,29 +330,28 @@ public class Server {
 
             send("WAITING-FOR-GUESS", players.get(currentlyGuessing).clientIndex);
 
-            //if wrong guess, update lives, check for loss
-            //if right guess, update lettersGuessInWord, check for win
-
             Character chars = letter.charAt(0);
 
             if (lettersInWord.contains(chars)){
                 this.lettersInWord.remove(chars);
-                checkForWin();
+                return checkForWin();
             }
             else{
                 System.out.println("not in word");
                 lives--;
-                checkForLoss();
+                return checkForLoss();
             }
-
-            //move onto next player
         }
 
         boolean checkForWin(){
            if (lettersInWord.size() == 0 ){
                System.out.println("won");
                for(int i = 0; i < players.size(); i++){
-                   send("GAMEOVER", players.get(i).clientIndex);
+                   send("WIN", players.get(i).clientIndex);
+                   players.get(i).numPlayersChosen = 0;
+                   players.get(i).difficultyChosen = "";
+                   this.isActive = false;
+                   gamesList.remove(this);
                }
                return true;
            }
@@ -391,7 +375,11 @@ public class Server {
             if (lives < 0){
                 for(int i = 0; i < players.size(); i++){
                     System.out.println("lost");
-                    send("GAMEOVER", players.get(i).clientIndex);
+                    send("LOSE", players.get(i).clientIndex);
+                    players.get(i).numPlayersChosen = 0;
+                    players.get(i).difficultyChosen = "";
+                    this.isActive = false;
+                    gamesList.remove(this);
                 }
                 return true;
             }
