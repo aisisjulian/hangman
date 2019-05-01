@@ -216,42 +216,25 @@ public class ClientFx extends Application {
                         this.es = new EndScene(primaryStage);
                         this.endScene = es.scene;
                         gs.updateSpaceShipImage();
-                        FadeTransition fadeTransition = new FadeTransition(Duration.millis(1500));
+                        FadeTransition fadeTransition = new FadeTransition(Duration.millis(1000));
                         fadeTransition.setNode(gs.spaceship);
                         fadeTransition.setFromValue(1.0);
                         fadeTransition.setToValue(0);
                         fadeTransition.setCycleCount(2);
                         fadeTransition.setAutoReverse(false);
                         fadeTransition.setOnFinished(ex-> primaryStage.setScene(endScene));
-                        if(gs.header.getText().equals("")) {
-                            gs.header.setText("YOU WIN :-)");
-                            gs.fadeHeader.setOnFinished(e->fadeTransition.play());
-                            gs.fadeHeader.playFromStart();
-                        }
-                        else{
-                            gs.fadeHeader.setOnFinished(e->{gs.header.setText("YOU WIN :-)");
-                                gs.fadeHeader.setOnFinished(ex->gs.header.setText(""));
-                                gs.fadeHeader.playFromStart();
-                                es.endMessage.setText("congrats, you win :-)");
-                                fadeTransition.playFromStart();
-                            });
-                        }
+                        gs.header.setText("YOU WIN :-)");
+                        gs.fadeHeader.setOnFinished(ex-> fadeTransition.playFromStart());
+                        gs.fadeHeader.playFromStart();
+                        es.endMessage.setText("congrats, you win :-)");
 
                         break;
                     case "LOSE":
                         gs.disableKeyboard();
                         this.es = new EndScene(primaryStage);
                         this.endScene = es.scene;
-                        if(gs.header.getText().equals("")) {
-                            gs.header.setText("YOU LOSE :-(");
-                            gs.fadeHeader.setOnFinished(ex->gs.header.setText(""));
-                            gs.fadeHeader.playFromStart();
-                        }
-                        else{
-                            gs.fadeHeader.setOnFinished(e->{gs.header.setText("YOU LOSE :-(");
-                                gs.fadeHeader.setOnFinished(ex->gs.header.setText(""));
-                                 gs.fadeHeader.playFromStart();});
-                        }
+                        gs.header.setText("YOU LOSE :-(");
+                        gs.fadeHeader.playFromStart();
                         gs.updateSpaceShipImage();
                         es.endMessage.setText("sorry, you lose :-(");
                         break;
